@@ -5,5 +5,6 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GRAVITY = 0.5
-BOUNCE_DAMPENING = 0.8
+BOUNCE_DAMPENING = 0.9  # Increased to maintain more momentum
+MIN_VELOCITY = 2.0  # Minimum velocity to maintain after bounce
 ROTATION_SPEED = 0.025  # Reduced for slower rotation
