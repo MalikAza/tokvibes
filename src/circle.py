@@ -69,13 +69,22 @@ class Circle:
         hole_start = self.angle - self.hole_size/2
         hole_end = self.angle + self.hole_size/2
         
-        if abs(distance - self.radius) < ball.radius:
+        # Only trigger when the ball is moving outward through the hole
+        if self.radius - ball.radius <= distance <= self.radius + ball.radius:
             if (hole_start <= angle <= hole_end) or \
                (hole_start <= angle + 2*math.pi <= hole_end + 2*math.pi):
-                self.active = False
-                # Trigger rotation of remaining active circles
-                self.start_rotation()
-                return True
+                # Calculate if ball is moving outward
+                velocity_angle = math.atan2(ball.dy, ball.dx)
+                if velocity_angle < 0:
+                    velocity_angle += 2*math.pi
+                    
+                # Check if ball's movement direction roughly matches the hole direction
+                angle_diff = abs(angle - velocity_angle)
+                if angle_diff <= math.pi/2:  # Ball is moving outward
+                    self.active = False
+                    # Trigger rotation of remaining active circles
+                    self.start_rotation()
+                    return True
         return False
     
     def start_rotation(self):

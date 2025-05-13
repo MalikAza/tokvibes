@@ -6,4 +6,4 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GRAVITY = 0.5
 BOUNCE_DAMPENING = 0.8
-ROTATION_SPEED = 0.05  # Reduced for slower rotation
+ROTATION_SPEED = 0.025  # Reduced for slower rotation
