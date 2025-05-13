@@ -1,0 +1,9 @@
+WIDTH = 800
+HEIGHT = 1000
+FPS = 60
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GRAVITY = 0.5
+BOUNCE_DAMPENING = 0.8
+ROTATION_SPEED = 0.1  # Increased significantly for more obvious rotation
