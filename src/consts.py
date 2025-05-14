@@ -11,8 +11,8 @@ FIRST_INNER_CIRCLE_RADIUS = 120  # Radius of the first circle
 CIRCLE_ROTATION_SPEED = 0.010  
 CIRCLE_SPACING = 12  # Space between each concentric circle
 CIRCLE_WIDTH = 5  # Width of the circle lines
-HOLE_SIZE_DEGREES = 30  # Size of hole in degrees
-HOLE_SHIFT = -5  # Shift of the hole in degrees
+HOLE_SIZE_DEGREES = 100  # Size of hole in degrees
+HOLE_SHIFT = -15  # Shift of the hole in degrees
 CIRCLE_NUMBERS = 10 
 CIRCLE_NUMBERS_DISPLAY = 5 # TODO not used for now
 

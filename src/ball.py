@@ -1,5 +1,6 @@
 import math
 import random
+import numpy as np
 import pygame
 from typing import TYPE_CHECKING
 
@@ -45,37 +46,60 @@ class Ball:
         dx = self.x - circle.x
         dy = self.y - circle.y
         distance = math.sqrt(dx*dx + dy*dy)
-        
+    
         next_x = self.x + self.dx
         next_y = self.y + self.dy
         next_dx = next_x - circle.x
         next_dy = next_y - circle.y
         next_distance = math.sqrt(next_dx*next_dx + next_dy*next_dy)
-        
-        hole_start, hole_end = circle.get_hole_point()
-        if circle.active and \
-              (hole_start[0] < self.x < hole_end[0] or hole_start[0] > self.x > hole_end[0]) and \
-                (hole_start[1] < self.y < hole_end[1] or hole_start[1] > self.y > hole_end[1]):
-            print("Ball in hole")
-            circle.active = False
-            self.dx = 0
-            self.dy = 0
-            return
-
+    
+        # Check if ball is in the hole
+        hole_start_angle = circle.angle + circle.hole_position
+        hole_end_angle = hole_start_angle + circle.hole_size
+    
         # Check both current and next position for collision
         if (abs(distance - circle.radius) < self.radius) or \
-           (abs(next_distance - circle.radius) < self.radius):
-            # Calculate normal vector
+            (abs(next_distance - circle.radius) < self.radius):
+        
+            # Check if ball is in the hole
+            ball_angle = math.atan2(-(self.y - circle.y), (self.x - circle.x))
+            
+            # Normalize angles to same range
+            if ball_angle < 0:
+                ball_angle += 2 * math.pi
+            while hole_start_angle < 0:
+                hole_start_angle += 2 * math.pi
+            while hole_end_angle < 0:
+                hole_end_angle += 2 * math.pi
+        
+            # Check if angle is within the hole range
+            in_hole = False
+            print(f"Ball angle: {math.degrees(ball_angle)}")
+            print(f"Hole start angle: {math.degrees(hole_start_angle)}")
+            print(f"Hole end angle: {math.degrees(hole_end_angle)}")
+            print(f"Distance: {distance}, Circle radius: {circle.radius}")
+
+            if hole_start_angle <= hole_end_angle:
+                in_hole = hole_start_angle <= ball_angle <= hole_end_angle
+            else:  # Handle case where hole crosses the 0 angle
+                in_hole = ball_angle >= hole_start_angle or ball_angle <= hole_end_angle
+            
+            if in_hole:
+                print("Ball in hole")
+                circle.active = False
+                return
+            
+            # Normal collision handling
             nx = dx / distance
             ny = dy / distance
-            
+        
             # Calculate dot product
             dot = self.dx*nx + self.dy*ny
-            
+        
             # Update velocity with dampening
             self.dx = (self.dx - 2*dot*nx) * BOUNCE_DAMPENING
             self.dy = (self.dy - 2*dot*ny) * BOUNCE_DAMPENING
-            
+        
             # Ensure minimum velocity after bounce
             total_velocity = math.sqrt(self.dx*self.dx + self.dy*self.dy)
             if total_velocity < MIN_VELOCITY:

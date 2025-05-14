@@ -24,6 +24,7 @@ class Circle:
         self.rotation_speed = CIRCLE_ROTATION_SPEED
         self.active = True
         self.angle = 0
+        self.points_hole = []
         
     def update(self):
         if self.active:
@@ -32,17 +33,7 @@ class Circle:
             # Update hole position
             self.hole_position = (self.hole_position + self.rotation_speed) % (2 * math.pi)
                         
-    def get_hole_point(self):
-        # Calculate the start and end points of the hole
-        start_angle = self.angle + self.hole_position
-        end_angle = start_angle + self.hole_size
-        
-        hole_start = (self.x + self.radius * math.cos(-start_angle),
-                      self.y + self.radius * math.sin(-start_angle))
-        hole_end = (self.x + self.radius * math.cos(-end_angle),
-                    self.y + self.radius * math.sin(-end_angle))
-        
-        return hole_start, hole_end
+
     
 
     def draw(self, screen: pygame.Surface):
@@ -64,8 +55,4 @@ class Circle:
         
         if len(points) > 1:
             pygame.draw.lines(screen, WHITE, False, points, self.width)
-
-        # Draw a green line for the hole
-        hole_start, hole_end = self.get_hole_point()
-        pygame.draw.line(screen, (0, 255, 0), hole_start, hole_end, self.width)
         
