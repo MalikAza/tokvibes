@@ -5,39 +5,53 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .ball import Ball
-from .consts import WHITE
+from .consts import CIRCLE_ROTATION_SPEED, CIRCLE_SPACING, FIRST_INNER_CIRCLE_RADIUS, HOLE_SHIFT, WHITE, HOLE_SIZE_DEGREES, CIRCLE_WIDTH, GRAVITY
 
 
 class Circle:
     def __init__(
         self,
-        x: int,
-        y: int,
-        radius: int,
-        rotation_speed: float
+        center: pygame.Vector2,
+        circle_number: int,
+        hole_position: float = 0,
     ):
-        self.x = x
-        self.y = y
-        self.radius = radius
-        self.angle = 0  # All circles start with hole at same position
-        self.hole_size = math.pi/6  # 30 degrees hole
+        self.x = center.x
+        self.y = center.y
+        self.width = CIRCLE_WIDTH
+        self.hole_position = math.radians(hole_position)
+        self.hole_size = math.radians(HOLE_SIZE_DEGREES) 
+        self.radius = FIRST_INNER_CIRCLE_RADIUS + circle_number * (CIRCLE_SPACING+CIRCLE_WIDTH)
+        self.rotation_speed = CIRCLE_ROTATION_SPEED
         self.active = True
-        self.rotation_speed = rotation_speed
-        self.rotating = True  # Start rotating by default
-        self.target_angle = 2 * math.pi  # Full rotation
-    
+        self.angle = 0
+        
     def update(self):
-        # Always rotate when active
         if self.active:
+            # Rotate the circle
             self.angle = (self.angle + self.rotation_speed) % (2 * math.pi)
+            # Update hole position
+            self.hole_position = (self.hole_position + self.rotation_speed) % (2 * math.pi)
+                        
+    def get_hole_point(self):
+        # Calculate the start and end points of the hole
+        start_angle = self.angle + self.hole_position
+        end_angle = start_angle + self.hole_size
+        
+        hole_start = (self.x + self.radius * math.cos(-start_angle),
+                      self.y + self.radius * math.sin(-start_angle))
+        hole_end = (self.x + self.radius * math.cos(-end_angle),
+                    self.y + self.radius * math.sin(-end_angle))
+        
+        return hole_start, hole_end
+    
 
     def draw(self, screen: pygame.Surface):
         if not self.active:
             return
             
         # Draw circle with a hole
-        start_angle = self.angle - self.hole_size/2
-        end_angle = self.angle + self.hole_size/2
+        start_angle = self.angle + self.hole_position
+        end_angle = start_angle + self.hole_size
         
         # Convert angles to start and end points
         points = []
@@ -49,45 +63,9 @@ class Circle:
             ))
         
         if len(points) > 1:
-            pygame.draw.lines(screen, WHITE, False, points, 2)
+            pygame.draw.lines(screen, WHITE, False, points, self.width)
 
-    def ball_escaped(self, ball: 'Ball'):
-        if not self.active:
-            return False
-            
-        # Calculate distance from ball to circle center
-        dx = ball.x - self.x
-        dy = ball.y - self.y
-        distance = math.sqrt(dx*dx + dy*dy)
+        # Draw a green line for the hole
+        hole_start, hole_end = self.get_hole_point()
+        pygame.draw.line(screen, (0, 255, 0), hole_start, hole_end, self.width)
         
-        # Calculate angle of ball relative to circle center
-        angle = math.atan2(dy, dx)
-        if angle < 0:
-            angle += 2*math.pi
-            
-        # Check if ball is near the circle's radius and within the hole
-        hole_start = self.angle - self.hole_size/2
-        hole_end = self.angle + self.hole_size/2
-        
-        # Only trigger when the ball is moving outward through the hole
-        if self.radius - ball.radius <= distance <= self.radius + ball.radius:
-            if (hole_start <= angle <= hole_end) or \
-               (hole_start <= angle + 2*math.pi <= hole_end + 2*math.pi):
-                # Calculate if ball is moving outward
-                velocity_angle = math.atan2(ball.dy, ball.dx)
-                if velocity_angle < 0:
-                    velocity_angle += 2*math.pi
-                    
-                # Check if ball's movement direction roughly matches the hole direction
-                angle_diff = abs(angle - velocity_angle)
-                if angle_diff <= math.pi/2:  # Ball is moving outward
-                    self.active = False
-                    # Trigger rotation of remaining active circles
-                    self.start_rotation()
-                    return True
-        return False
-    
-    def start_rotation(self):
-        self.rotating = True
-        # When triggered by ball escape, rotate 180 degrees from current position
-        self.target_angle = (self.angle + math.pi) % (2 * math.pi)
