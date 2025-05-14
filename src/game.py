@@ -1,10 +1,12 @@
+import math
 import random
 import sys
+import numpy as np
 import pygame
 
 from .circle import Circle
 from .ball import Ball
-from .consts import BLACK, CIRCLE_NUMBERS, FPS, HEIGHT, WIDTH, HOLE_SHIFT, WHITE
+from .consts import BLACK, CIRCLE_NUMBERS, FPS, HEIGHT, RED, WIDTH, HOLE_SHIFT, WHITE
 
 
 
@@ -32,7 +34,7 @@ class Game:
         self.score = 0
         self.game_over = False
 
-        self.debug_bounce = False
+        self.debug_bounce = True
         
     def run(self):
         running = True
@@ -47,8 +49,6 @@ class Game:
                         self.game_over = False
                     elif event.key == pygame.K_ESCAPE:
                         running = False
-                    elif event.key == pygame.K_b:
-                        self.debug_bounce = True
             
             if not self.game_over:
                 # Update ball position
@@ -61,7 +61,7 @@ class Game:
                 # Check for collisions and escapes
                 for circle in self.circles:
                     if circle.active:
-                        self.ball.check_collision(circle)
+                        self.ball.check_collision(circle)  # Remove screen parameter
                 
                 
                 # Check win condition
@@ -79,13 +79,33 @@ class Game:
             
             if self.game_over:
                 self.display_text("Game Over! Press R to restart", WIDTH//2, HEIGHT//2, center=True)
-            
+            if self.debug_bounce:  # Only show when debug is enabled
+                self.draw_debug_info()
             pygame.display.flip()
             self.clock.tick(FPS)
         
         pygame.quit()
         sys.exit()
-        
+    
+    def draw_debug_info(self):
+        # Draw hole visualization for debugging
+        for circle in self.circles:
+            if circle.active:
+             # Get hole start and end angles
+                hole_start_angle = circle.angle + circle.hole_position
+                hole_end_angle = hole_start_angle + circle.hole_size
+            
+                # Draw the hole path
+                points_hole = []
+                for angle in np.linspace(hole_start_angle, hole_end_angle, 100):
+                    points_hole.append((
+                        circle.x + circle.radius * math.cos(-angle),
+                        circle.y + circle.radius * math.sin(-angle)
+                    ))
+                if len(points_hole) > 1:
+                    pygame.draw.lines(self.screen, RED, False, points_hole, 5)
+    
+    # Draw a diagonal line for reference
     def display_text(self, text, x, y, center=False):
         font = pygame.font.SysFont(None, 36)
         text_surface = font.render(text, True, WHITE)
