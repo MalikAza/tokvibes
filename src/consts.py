@@ -18,7 +18,7 @@ CIRCLE_WIDTH = 5  # Width of the circle lines
 HOLE_SIZE_DEGREES = 30  # Size of hole in degrees
 HOLE_SHIFT = -15  # Shift of the hole in degrees
 DEFAULT_CIRCLE_NUMBERS = 30 # total number of circles
-CIRCLE_NUMBERS_DISPLAY = 10
+DEFAULT_CIRCLE_NUMBERS_DISPLAY = 10
 CIRCLE_FADE_OUT_FRAME = 30  
 CIRCLE_FADE_IN_FRAME = 40
 

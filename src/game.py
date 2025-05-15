@@ -8,7 +8,6 @@ from .circle import Circle
 from .ball import Ball
 from .consts import (
     BLACK,
-    CIRCLE_NUMBERS_DISPLAY,
     FPS,
     GREEN,
     RED,
@@ -23,11 +22,13 @@ class Game:
     def __init__(
         self,
         screen: pygame.Surface,
-        circles_number: int
+        circles_number: int,
+        circles_display: int
     ) -> None:
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.circles_number = circles_number
+        self.circles_display = circles_display
         self.center = pygame.Vector2(
             x=self.screen.get_width()//2,
             y=self.screen.get_height()//2
@@ -39,7 +40,7 @@ class Game:
                 center=self.center,
                 circle_number=i,
                 hole_position=(i*HOLE_SHIFT)%360,
-                displayed= i < CIRCLE_NUMBERS_DISPLAY
+                displayed= i < self.circles_display
             )
             for i in range(self.circles_number)
         ]
@@ -135,7 +136,7 @@ class Game:
         self.screen.fill(BLACK)
 
         displayed_circles = [c for c in self.circles if c.displayed]
-        if len(displayed_circles) < CIRCLE_NUMBERS_DISPLAY:
+        if len(displayed_circles) < self.circles_display:
             for circle in self.circles:
                 if not circle.displayed:
                     circle.display()  
