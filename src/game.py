@@ -16,21 +16,21 @@ class Game:
         pygame.display.set_caption("TikTok Circles")
         self.clock = pygame.time.Clock()
         self.center = pygame.Vector2(WIDTH//2, HEIGHT//2)
-        self.num_circles = CIRCLE_NUMBERS
         
         self.circles = []
         self.balls = []
-        for i in range(self.num_circles):
+        for i in range(CIRCLE_NUMBERS):
             circle = Circle(
                 center=self.center,
                 circle_number=i,
-                hole_position=(i * HOLE_SHIFT) % 360
+                hole_position=(i * HOLE_SHIFT) % 360,
+                displayed=i < CIRCLE_NUMBERS_DISPLAY
             )
             self.circles.append(circle)
         
         # Create ball in the center
-        self.balls = [Ball(center=self.center, score_position=SCORE_POSITION_1),
-                      Ball(center=self.center, color=GREEN, score_position=SCORE_POSITION_2)
+        self.balls = [Ball(center=self.center, color=GREEN, score_position=SCORE_POSITION_1, text="Yes"),
+                      Ball(center=self.center, score_position=SCORE_POSITION_2, text="No")
                       ]
         
         # Game state
@@ -76,14 +76,21 @@ class Game:
                             ball.check_collision(circle)
                 
                 
+                # delete inactive circles
+                self.circles = [circle for circle in self.circles if circle.active or circle.desactivate_frame > 0]
+                # display more circles if possible
+                if len(self.circles) < CIRCLE_NUMBERS_DISPLAY:
+                    for i in range(len(self.circles), CIRCLE_NUMBERS_DISPLAY):
+                        circle - self.circles[i]
+                        circle.displayed = True
+                        print(f"Circle {i} displayed")
+                        
                 # End game if no circles are active
-                if all(not circle.active for circle in self.circles):
+                if all(not circle.active and circle.desactivate_frame <= 0 for circle in self.circles):
                     self.game_over = True
             
             # Draw everything
             self.screen.fill(BLACK)
-            # delete inactive circles
-            self.circles = [circle for circle in self.circles if circle.active]
            
             # display only the first CIRCLE_NUMBERS_DISPLAY circles
             for i in range(min(len(self.circles), CIRCLE_NUMBERS_DISPLAY)):
