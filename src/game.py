@@ -1,110 +1,94 @@
 import math
-import random
 import sys
+from typing import List
 import numpy as np
 import pygame
 
 from .circle import Circle
 from .ball import Ball
-from .consts import BLACK, CIRCLE_NUMBERS, CIRCLE_NUMBERS_DISPLAY, FPS, GREEN, HEIGHT, RED, SCORE_POSITION_1, SCORE_POSITION_2, WIDTH, HOLE_SHIFT, WHITE
-
+from .consts import (
+    BLACK,
+    CIRCLE_NUMBERS_DISPLAY,
+    FPS,
+    GREEN,
+    RED,
+    SCORE_POSITION_1,
+    SCORE_POSITION_2,
+    HOLE_SHIFT,
+    WHITE
+)
 
 
 class Game:
-    def __init__(self):
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        pygame.display.set_caption("TikTok Circles")
+    def __init__(
+        self,
+        screen: pygame.Surface,
+        circles_number: int
+    ) -> None:
+        self.screen = screen
         self.clock = pygame.time.Clock()
-        self.center = pygame.Vector2(WIDTH//2, HEIGHT//2)
-        self.num_circles = CIRCLE_NUMBERS
-        
-        self.circles = []
-        self.balls = []
-        for i in range(self.num_circles):
-            circle = Circle(
-                center=self.center,
-                circle_number=i,
-                hole_position=(i * HOLE_SHIFT) % 360
-            )
-            self.circles.append(circle)
-        
-        # Create ball in the center
-        self.balls = [Ball(center=self.center, score_position=SCORE_POSITION_1),
-                      Ball(center=self.center, color=GREEN, score_position=SCORE_POSITION_2)
-                      ]
+        self.circles_number = circles_number
+        self.center = pygame.Vector2(
+            x=self.screen.get_width()//2,
+            y=self.screen.get_height()//2
+        )
+
+        # Elements
+        self.circles = [
+            Circle(center=self.center, circle_number=i, hole_position=(i*HOLE_SHIFT)%360)
+            for i in range(self.circles_number)
+        ]
+        self.balls = [
+            Ball(center=self.center, score_position=SCORE_POSITION_1),
+            Ball(center=self.center, color=GREEN, score_position=SCORE_POSITION_2)
+        ]
         
         # Game state
         self.score = 0
         self.game_over = False
-
         self.debug_bounce = False
-        
-    # # # #
-    # MAIN #
-    # # # #   
-    def run(self):
-        running = True
-        while running:
-            # Handle events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                    
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_r:
-                        self.__init__()
-                        self.game_over = False
-                    elif event.key == pygame.K_ESCAPE:
-                        running = False
-                    elif event.key == pygame.K_d:
-                        self.debug_bounce = not self.debug_bounce
-            
-            # hanle game
-            if not self.game_over:
-                # Update ball position
-                for ball in self.balls:
-                    ball.move()
-                
-                # Update circle rotations/zoom
-                for i, circle in enumerate(self.circles):
-                    circle.update(i)
-                
-                # Check for collisions and escapes, and update score
-                for circle in self.circles:
-                    if circle.active:
-                        for ball in self.balls:
-                            ball.check_collision(circle)
-                
-                
-                # End game if no circles are active
-                if all(not circle.active for circle in self.circles):
-                    self.game_over = True
-            
-            # Draw everything
-            self.screen.fill(BLACK)
-            # delete inactive circles
-            self.circles = [circle for circle in self.circles if circle.active]
-           
-            # display only the first CIRCLE_NUMBERS_DISPLAY circles
-            for i in range(min(len(self.circles), CIRCLE_NUMBERS_DISPLAY)):
-                circle = self.circles[i]
-                circle.draw(self.screen)
 
-            # Draw balls
-            for ball in self.balls:
-                ball.draw(self.screen)
-                        
-            if self.game_over:
-                self.display_text("Game Over! Press R to restart", WIDTH//2, HEIGHT//2, center=True)
-            if self.debug_bounce:  # Only show when debug is enabled
-                self.draw_debug_info()
-            pygame.display.flip()
-            self.clock.tick(FPS)
-        
-        pygame.quit()
-        sys.exit()
+    def _handle_events(self) -> bool:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False
+            
+            if event.type == pygame.KEYDOWN:
+                match event.key:
+                    case pygame.K_r:
+                        self.__init__(self.screen, self.circles_number)
+
+                    case pygame.K_d:
+                        self.debug_bounce = not self.debug_bounce
+
+                    case pygame.K_ESCAPE:
+                        return False
+                    
+        return True
     
-    def draw_debug_info(self):
+    def _handle_game(self) -> None:
+        if self.game_over: return
+
+        for ball in self.balls:
+            ball.move()
+
+        active_circles: List[Circle] = []
+        for i, circle in enumerate(self.circles):
+            circle.update(i) # Update circle rotations/zoom
+
+            if circle.active:
+                active_circles.append(circle) # Keeping only active circles
+                
+                # Check for collisions, escapes, and update score
+                for ball in self.balls:
+                    ball.check_collision(circle)
+
+        self.circles = active_circles
+
+        if all(not circle.active for circle in self.circles):
+            self.game_over = True
+
+    def _draw_debug_info(self):
         # Draw hole visualization for debugging
         for circle in self.circles:
             if circle.active:
@@ -122,11 +106,51 @@ class Game:
                 if len(points_hole) > 1:
                     pygame.draw.lines(self.screen, RED, False, points_hole, 5)
     
-    def display_text(self, text, x, y, center=False):
+    def _display_text(
+        self,
+        text: str,
+        x: float,
+        y: float,
+        center: bool = False
+    ) -> None:
         font = pygame.font.SysFont(None, 36)
         text_surface = font.render(text, True, WHITE)
-        if center:
-            text_rect = text_surface.get_rect(center=(x, y))
-        else:
-            text_rect = text_surface.get_rect(topleft=(x, y))
+        text_rect = text_surface.get_rect(center=(x, y)) if center \
+                    else text_surface.get_rect(topleft=(x, y))
+        
         self.screen.blit(text_surface, text_rect)
+
+    def _update_display(self) -> None:
+        self.screen.fill(BLACK)
+
+        # display only the first CIRCLE_NUMBERS_DISPLAY circles
+        for i in range(min(len(self.circles), CIRCLE_NUMBERS_DISPLAY)):
+            circle = self.circles[i]
+            circle.draw(self.screen)
+
+        for ball in self.balls:
+            ball.draw(self.screen)
+
+        if self.game_over:
+            self._display_text(
+                "Game Over! Press R to restart",
+                self.center.x,
+                self.center.y,
+                center=True
+            )
+
+        if self.debug_bounce:
+            self._draw_debug_info()
+
+        pygame.display.flip()
+        self.clock.tick(FPS)
+        
+    def run(self):
+        running = True
+        while running:
+            running = self._handle_events()
+            self._handle_game()
+            self._update_display()
+        
+        pygame.quit()
+        sys.exit()

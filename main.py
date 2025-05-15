@@ -1,8 +1,4 @@
-import pygame
-
-from src.game import Game
+import src.cli as cli
 
 if __name__ == "__main__":
-    pygame.init()
-    game = Game()
-    game.run()
+    cli.run()

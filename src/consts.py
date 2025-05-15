@@ -16,9 +16,10 @@ CIRCLE_SPACING = 12  # Space between each concentric circle
 CIRCLE_WIDTH = 5  # Width of the circle lines
 HOLE_SIZE_DEGREES = 50  # Size of hole in degrees
 HOLE_SHIFT = -15  # Shift of the hole in degrees
-CIRCLE_NUMBERS = 30 # total number of circles
+DEFAULT_CIRCLE_NUMBERS = 30 # total number of circles
 CIRCLE_NUMBERS_DISPLAY = 10
 
+# Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
