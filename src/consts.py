@@ -48,3 +48,12 @@ TIMER_COLOR = (255, 255, 255)  # White color for timer (changed from cyan)
 TIMER_FIRE_THRESHOLD = 12  # Seconds remaining when fire effects begin (increased)
 TIMER_BLINK_THRESHOLD = 8  # Seconds remaining when blinking starts
 TIMER_MAX_PARTICLES = 80  # Maximum number of particles (increased)
+
+# Screen shake settings
+SCREEN_SHAKE_INTENSITY = 10  # Maximum pixels to shake
+SCREEN_SHAKE_DURATION = 0.5  # Duration in seconds
+
+# MIDI settings
+MIDI_NOTE_DURATION = 0.2  # Duration of bounce note in seconds
+MIDI_DEFAULT_VELOCITY = 80  # Default velocity for generated notes (0-127)
+MIDI_VOLUME = 0.1  # Maximum volume for MIDI notes (0.0 to 1.0)

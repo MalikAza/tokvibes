@@ -14,6 +14,9 @@ from .consts import (
     SCORE_EFFECT_DURATION, FPS, BALL_TEXT_SIZE
 )
 
+# Import the music manager
+from .music_manager import MusicManager
+
 
 class FireParticle:
     def __init__(self, x, y, color):
@@ -104,6 +107,9 @@ class Ball:
         self.ball_fire_timer = 0
         self.ball_fire_duration = SCORE_EFFECT_DURATION * FPS
         self.ball_fire_particles = []
+        
+        # Get music manager instance (shared across all balls)
+        self.music_manager = MusicManager.get_instance()
     
     def move(self):
         # Apply gravity
@@ -210,11 +216,12 @@ class Ball:
                 self.fire_particles.append(FireParticle(x, y, self.color))
         
     def play_bounce_sound(self):
-        #TODO: Implement sound playing
-        # Placeholder for sound playing
-        current_dir = os.path.dirname(os.path.abspath(__file__)) 
-        music_dir = os.path.join(current_dir, 'Musics/bounce.mp3')
-        pygame.mixer.Sound(music_dir).play(0)
+        """Play bounce sound effect using the music manager"""
+        self.music_manager.play_bounce_sound()
+        
+    def play_score_sound(self):
+        """Play score sound effect using the music manager"""
+        self.music_manager.play_score_sound()
 
     def check_collision(self, circle: 'Circle'):
         # Calculate distance from ball center to circle center
@@ -261,6 +268,9 @@ class Ball:
                 
                 # Add an initial burst of particles
                 self._create_score_burst()
+                
+                # Play score sound
+                self.play_score_sound()
                 
                 return
             
