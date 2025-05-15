@@ -1,57 +1,48 @@
 import os
 import sys
 import subprocess
-import platform
 
 def install_packages():
     """Install required packages using pip"""
     print("Installing required packages...")
     
-    # Basic required packages
-    required_packages = [
-        "pygame",
-        "numpy",
-        "setuptools"
-    ]
-    
-    # Optional packages (will be skipped if installation fails)
-    optional_packages = [
-        "pretty_midi"
-    ]
+    # Define packages
+    required_packages = ["pygame", "numpy", "setuptools"]
+    optional_packages = ["pretty_midi"]
     
     # Install required packages
     for package in required_packages:
-        print(f"Installing {package}...")
         try:
             subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-            print(f"Successfully installed {package}")
+            print(f"✓ Installed {package}")
         except Exception as e:
-            print(f"Failed to install {package}: {e}")
-            print(f"Please install {package} manually with: pip install {package}")
+            print(f"✗ Failed to install {package}: {e}")
+            print(f"  Please install manually: pip install {package}")
     
     # Try to install optional packages
     for package in optional_packages:
-        print(f"Installing optional package {package}...")
         try:
             subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-            print(f"Successfully installed {package}")
-        except Exception as e:
-            print(f"Note: Optional package {package} could not be installed.")
-            print(f"Game will still work, but with reduced functionality.")
+            print(f"✓ Installed optional package {package}")
+        except Exception:
+            print(f"✗ Optional package {package} not installed")
+            print(f"  Some features will be limited")
 
 def create_directories():
     """Create necessary directories"""
     print("\nSetting up directories...")
     
-    # Create Musics directory
-    src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
+    # Project paths
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    src_dir = os.path.join(base_dir, "src")
     music_dir = os.path.join(src_dir, "Musics")
     midi_dir = os.path.join(music_dir, "MIDI")
     
+    # Create directories
     for directory in [music_dir, midi_dir]:
         if not os.path.exists(directory):
             os.makedirs(directory)
-            print(f"Created directory: {directory}")
+            print(f"Created: {directory}")
 
 def main():
     """Main setup function"""
@@ -59,25 +50,23 @@ def main():
     print("TokVibes Game Setup")
     print("=" * 60)
     
-    # Install required packages
+    # Run setup steps
     install_packages()
+    create_directories()
     
-    # Try to import pygame after installation
+    # Verify pygame installation
     try:
         import pygame
         pygame.init()
-        print("\nPygame initialized successfully!")
+        print("\n✓ Pygame initialized successfully!")
     except:
-        print("\nWarning: Failed to initialize Pygame.")
-        print("The game may not work correctly.")
+        print("\n✗ Failed to initialize Pygame")
+        print("  Game may not work correctly")
     
-    # Create necessary directories
-    create_directories()
-    
-    print("\nSetup complete! You can now run the game.")
-    print("To start the game, run: python -m src.main")
-    print("\nNote: You need to place MIDI files in the src/Musics/MIDI directory")
-    print("      to enable MIDI-based sound effects.")
+    # Display final instructions
+    print("\n✓ Setup complete!")
+    print("  To start the game:  python -m src.main")
+    print("  For MIDI support:   Place MIDI files in src/Musics/MIDI/")
 
 if __name__ == "__main__":
     main()
