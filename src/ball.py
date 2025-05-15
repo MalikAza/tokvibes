@@ -91,6 +91,7 @@ class Ball:
             if in_hole:
                 circle.desactivate()
                 self.score += 1
+                return
             
             ### Bounce ###
             self.play_bounce_sound()
