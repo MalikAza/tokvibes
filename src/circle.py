@@ -45,6 +45,7 @@ class Circle:
         
 
     def draw(self, screen: pygame.Surface):
+        # TODO: maybe if first time drawn, fade in the circle?
         if not self.active:
             return
         
