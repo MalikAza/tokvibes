@@ -6,6 +6,7 @@ import pygame
 
 from .circle import Circle
 from .ball import Ball
+from .timer import Timer
 from .consts import (
     BLACK,
     FPS,
@@ -14,7 +15,8 @@ from .consts import (
     SCORE_POSITION_1,
     SCORE_POSITION_2,
     HOLE_SHIFT,
-    WHITE
+    WHITE,
+    TIMER_DURATION
 )
 
 
@@ -45,14 +47,17 @@ class Game:
             for i in range(self.circles_number)
         ]
         self.balls = [
-            Ball(center=self.center, color=GREEN, score_position=SCORE_POSITION_1, text="Yes"),
-            Ball(center=self.center, score_position=SCORE_POSITION_2, text="No")
+            Ball(center=self.center, score_position=SCORE_POSITION_2, text="No"),
+            Ball(center=self.center, color=GREEN, score_position=SCORE_POSITION_1, text="Yes")
         ]
         
         # Game state
         self.score = 0
         self.game_over = False
         self.debug_bounce = False
+        
+        # Initialize timer
+        self.timer = Timer()
 
     def _handle_events(self) -> bool:
         for event in pygame.event.get():
@@ -62,7 +67,7 @@ class Game:
             if event.type == pygame.KEYDOWN:
                 match event.key:
                     case pygame.K_r:
-                        self.__init__(self.screen, self.circles_number)
+                        self.__init__(self.screen, self.circles_number, self.circles_display)
                         self.game_over = False
 
                     case pygame.K_d:
@@ -75,6 +80,12 @@ class Game:
     
     def _handle_game(self) -> None:
         if self.game_over: return
+
+        # Update timer
+        self.timer.update()
+        if self.timer.is_expired():
+            self.game_over = True
+            return
 
         for ball in self.balls:
             ball.move()
@@ -148,10 +159,14 @@ class Game:
 
         for ball in self.balls:
             ball.draw(self.screen)
+            
+        # Draw the timer
+        self.timer.draw(self.screen)
 
         if self.game_over:
+            game_over_text = "Time's up!" if self.timer.is_expired() else "Game Over!"
             self._display_text(
-                "Game Over! Press R to restart",
+                f"{game_over_text} Press R to restart",
                 self.center.x,
                 self.center.y,
                 center=True

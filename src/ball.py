@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 from .consts import (
     BALL_RADIUS, BALL_TRAIL_LENGTH, BOUNCE_DAMPENING, HEIGHT, MIN_VELOCITY, 
     RED, GRAVITY, WIDTH, FIRE_PARTICLES, FIRE_LIFETIME, FIRE_SPEED, 
-    SCORE_EFFECT_DURATION, FPS
+    SCORE_EFFECT_DURATION, FPS, BALL_TEXT_SIZE
 )
 
 
@@ -99,6 +99,11 @@ class Ball:
         self.pill_rect = None  # Will store the pill rect for particle emission
         self.score_effect_timer = 0    # Counter for how long to show effect
         self.score_effect_duration = SCORE_EFFECT_DURATION * FPS  # Convert seconds to frames
+        
+        # New properties for ball fire effect
+        self.ball_fire_timer = 0
+        self.ball_fire_duration = SCORE_EFFECT_DURATION * FPS
+        self.ball_fire_particles = []
     
     def move(self):
         # Apply gravity
@@ -124,9 +129,52 @@ class Ball:
         # Update fire particles and effect timer
         if self.score_effect_timer > 0:
             self.score_effect_timer -= 1
+            
+        # Update ball fire timer
+        if self.ball_fire_timer > 0:
+            self.ball_fire_timer -= 1
         
         self._update_fire_particles()
+        self._update_ball_fire_particles()
         return
+        
+    def _update_ball_fire_particles(self):
+        """Update fire particles around the ball itself"""
+        # Remove dead particles
+        self.ball_fire_particles = [p for p in self.ball_fire_particles if p.lifetime > 0]
+        
+        # Update existing particles
+        for particle in self.ball_fire_particles:
+            particle.update()
+        
+        # Only add new particles if ball fire effect is active
+        if self.ball_fire_timer > 0:
+            # Create more particles when effect is fresh (higher emission rate)
+            effect_freshness = self.ball_fire_timer / self.ball_fire_duration
+            max_ball_particles = FIRE_PARTICLES * 1.5  # More particles for the ball (50% more)
+            new_particles = max(1, int((max_ball_particles - len(self.ball_fire_particles)) * effect_freshness / 4))
+            
+            for _ in range(new_particles):
+                # Generate particles in a circle around the ball
+                angle = random.uniform(0, 2 * math.pi)
+                offset = random.uniform(0.8, 1.2)  # Slight randomness in emission distance
+                
+                # Position slightly outside the ball's perimeter
+                x = self.x + math.cos(angle) * (self.radius * offset)
+                y = self.y + math.sin(angle) * (self.radius * offset)
+                
+                # Customize particle for more dramatic effect
+                particle = FireParticle(x, y, self.color)
+                
+                # Add velocity in direction away from ball center (fire bursting outward)
+                outward_speed = random.uniform(1.0, 3.0) * FIRE_SPEED
+                particle.dx = math.cos(angle) * outward_speed
+                particle.dy = math.sin(angle) * outward_speed
+                
+                # Larger particles for ball fire
+                particle.size *= 1.3
+                
+                self.ball_fire_particles.append(particle)
 
     def _update_fire_particles(self):
         # Remove dead particles
@@ -205,8 +253,14 @@ class Ball:
                 circle.desactivate()
                 self.score += 1
                 
-                # Trigger fire effect when scoring a point
+                # Trigger fire effect on the score pill
                 self.score_effect_timer = self.score_effect_duration
+                
+                # Trigger fire effect on the ball itself
+                self.ball_fire_timer = self.ball_fire_duration
+                
+                # Add an initial burst of particles
+                self._create_score_burst()
                 
                 return
             
@@ -230,7 +284,43 @@ class Ball:
                 self.dx *= scale
                 self.dy *= scale
             
+    def _create_score_burst(self):
+        """Create an initial burst of particles when scoring"""
+        burst_count = 20  # Number of particles in the initial burst
+        
+        for _ in range(burst_count):
+            angle = random.uniform(0, 2 * math.pi)
+            offset = random.uniform(0.9, 1.3)
+            
+            # Position at the ball's perimeter
+            x = self.x + math.cos(angle) * (self.radius * offset)
+            y = self.y + math.sin(angle) * (self.radius * offset)
+            
+            # Create particle with bright color (add some yellow to make it more fiery)
+            r = 255
+            g = random.randint(180, 255)  # More yellow for a more intense fire effect
+            b = random.randint(0, 100)
+            color = (r, g, b)
+            
+            particle = FireParticle(x, y, color)
+            
+            # Stronger outward velocity for burst effect
+            burst_speed = random.uniform(2.0, 5.0) * FIRE_SPEED
+            particle.dx = math.cos(angle) * burst_speed
+            particle.dy = math.sin(angle) * burst_speed
+            
+            # Larger particles for the burst
+            particle.size = random.uniform(3, 7)
+            
+            self.ball_fire_particles.append(particle)
+            
     def draw(self, screen: pygame.Surface):
+        # Draw ball fire particles
+        if self.ball_fire_particles:
+            fire_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+            for particle in self.ball_fire_particles:
+                particle.draw(fire_surface)
+            screen.blit(fire_surface, (0, 0))
 
         # Add a trail behind the ball
         if len(self.old_pos) > 1:
@@ -244,17 +334,32 @@ class Ball:
                 pygame.draw.circle(trail_surface, color, self.old_pos[i], size)
             screen.blit(trail_surface, (0, 0))
 
-            
+        # Draw the ball
         pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)
-        # Draw inner circle in black
         pygame.draw.circle(screen, (0, 0, 0), (int(self.x), int(self.y)), self.radius - 2)
-        # Write self.text in it
-        font = pygame.font.Font(None, 15)
-        text = font.render(self.text, True, (255, 255, 255))
+        
+        # Create a pulsating effect when ball is on fire
+        pulse_size = 0
+        if self.ball_fire_timer > 0:
+            # Calculate pulse size based on remaining fire time
+            pulse_progress = self.ball_fire_timer / self.ball_fire_duration
+            pulse_frequency = 0.3  # Controls how fast the pulse happens
+            pulse_magnitude = 3  # Maximum size increase
+            pulse_size = int(math.sin(pulse_progress * 30) * pulse_magnitude * pulse_progress)
+        
+        # Write text in ball, accounting for any pulse effect
+        font = pygame.font.Font(None, BALL_TEXT_SIZE + pulse_size)
+        text_color = (255, 255, 255)
+        
+        # Make text yellow/orange when ball is on fire
+        if self.ball_fire_timer > 0:
+            # Pulse the text color too
+            pulse_color = int(math.sin(self.ball_fire_timer * 0.5) * 40 + 215)
+            text_color = (255, pulse_color, 0)
+            
+        text = font.render(self.text, True, text_color)
         text_rect = text.get_rect(center=(self.x, self.y))
         screen.blit(text, text_rect)
-
-        
 
         # Draw score with pill background and fire effect (if active)
         if self.score_position != (0, 0):
