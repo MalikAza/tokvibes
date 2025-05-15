@@ -1,7 +1,7 @@
 import os
 import random
 import pygame
-import math  # Add math module import
+import math
 
 # Import from constants
 from .consts import MIDI_VOLUME
@@ -20,7 +20,7 @@ try:
     import pretty_midi
     PRETTY_MIDI_AVAILABLE = True
 except ImportError:
-    print("pretty_midi not available. Using simple sounds instead.")
+    print("pretty_midi not available. Some sound features will be limited.")
     PRETTY_MIDI_AVAILABLE = False
 
 class MusicManager:
@@ -63,8 +63,6 @@ class MusicManager:
         # Only attempt to load MIDI if pretty_midi is available
         if PRETTY_MIDI_AVAILABLE:
             self.midi_loaded = self._load_midi()
-        else:
-            self._create_default_notes()  # Still create notes for simple sound generation
     
     def _load_sound(self, name):
         """Load a sound file (MP3 or WAV)"""
@@ -87,51 +85,8 @@ class MusicManager:
             except:
                 pass
         
-        # If we couldn't load any sound files, create a basic sound
-        print(f"Warning: Could not load sound {name}, generating a simple sound")
-        return self._create_simple_sound(name == 'hmm')
-        
-    def _create_simple_sound(self, is_hmm=False):
-        """Create a simple sound effect with pygame directly"""
-        try:
-            frequency = 150 if is_hmm else 800
-            duration = 0.5 if is_hmm else 0.3
-            sample_rate = 44100
-            num_samples = int(duration * sample_rate)
-            
-            # Create a buffer for the sound
-            buf = bytearray(num_samples * 2)  # 16-bit samples
-            
-            # Generate a simple sine wave
-            for i in range(num_samples):
-                t = float(i) / sample_rate
-                if is_hmm:
-                    # More complex hmm sound
-                    value = int(32767.0 * 0.5 * (
-                        math.sin(2 * 3.14159 * frequency * t) + 
-                        0.3 * math.sin(2 * 3.14159 * frequency * 2 * t)
-                    ))
-                    
-                    # Apply envelope
-                    if t < 0.1:
-                        value = int(value * (t / 0.1))
-                    elif t > duration - 0.2:
-                        value = int(value * ((duration - t) / 0.2))
-                else:
-                    # Bounce sound with decay
-                    decay = max(0, 1.0 - t / duration)
-                    value = int(32767.0 * 0.5 * decay * math.sin(2 * 3.14159 * frequency * t))
-                    
-                # Pack into buffer (little-endian 16-bit samples)
-                buf[i*2] = value & 0xFF
-                buf[i*2+1] = (value >> 8) & 0xFF
-            
-            # Create sound from buffer
-            return pygame.mixer.Sound(buffer=buf)
-            
-        except Exception as e:
-            print(f"Failed to create simple sound: {e}")
-            return None
+        print(f"Warning: Could not load sound {name}")
+        return None
         
     def _load_midi(self):
         """Load and parse MIDI file for bounce notes"""
@@ -181,12 +136,10 @@ class MusicManager:
                     
                     if not self.midi_notes:
                         print("Warning: No notes found in MIDI file")
-                        self._create_default_notes()
                         return False
                     
                     # Print a sample of notes for debugging
                     sample_size = min(10, len(self.midi_notes))
-                    print(f"Sample of notes: {self.midi_notes[:sample_size]}")
                     print(f"Extracted {len(self.midi_notes)} notes from MIDI file")
                     print(f"Using custom volume: {custom_volume}")
                     return True
@@ -200,7 +153,6 @@ class MusicManager:
         
         if not os.path.exists(midi_path):
             print(f"Warning: MIDI file not found at {midi_path}")
-            self._create_default_notes()
             return False
             
         try:
@@ -209,22 +161,22 @@ class MusicManager:
             print(f"Loaded MIDI file: {midi_path}")
             
             # Extract notes from all instruments
+            all_notes = []
             for instrument in midi_data.instruments:
                 for note in instrument.notes:
                     pitch = note.pitch
                     velocity = note.velocity
                     start_time = note.start
-                    self.midi_notes.append((pitch, velocity, start_time))
+                    all_notes.append((pitch, velocity, start_time))
             
             # Sort notes by start time to play in sequence (not by pitch)
-            self.midi_notes.sort(key=lambda x: x[2])
+            all_notes.sort(key=lambda x: x[2])
             
             # Remove the start_time after sorting
-            self.midi_notes = [(pitch, velocity) for pitch, velocity, _ in self.midi_notes]
+            self.midi_notes = [(pitch, velocity) for pitch, velocity, _ in all_notes]
             
             if not self.midi_notes:
                 print("Warning: No notes found in MIDI file")
-                self._create_default_notes()
                 return False
             
             # Print a sample of notes for debugging
@@ -235,24 +187,7 @@ class MusicManager:
             
         except Exception as e:
             print(f"Error loading MIDI file: {e}")
-            self._create_default_notes()
             return False
-    
-    def _create_default_notes(self):
-        """Create default notes if MIDI file can't be loaded"""
-        # Generate a simple C major scale
-        base_pitches = [60, 62, 64, 65, 67, 69, 71, 72]  # C4 to C5
-        
-        # Create a variety of notes across octaves
-        for octave in range(3, 6):  # 3 octaves
-            for pitch in base_pitches:
-                adjusted_pitch = pitch + (octave - 4) * 12
-                velocity = random.randint(70, 100)
-                self.midi_notes.append((adjusted_pitch, velocity))
-        
-        # Shuffle for variety
-        random.shuffle(self.midi_notes)
-        print(f"Created {len(self.midi_notes)} default notes")
     
     def play_score_sound(self):
         """Play the scoring sound"""
@@ -273,14 +208,12 @@ class MusicManager:
             next_index = (self.current_note_index + 1) % len(self.midi_notes)
             self.current_note_index = next_index
             
-            next_pitch = self.midi_notes[next_index][0] if next_index < len(self.midi_notes) else "N/A"
-            
             try:
                 # Convert MIDI pitch to frequency (Hz)
                 frequency = 440.0 * (2.0 ** ((pitch - 69) / 12.0))
                 
                 # Normalize velocity to volume (0.0 to 1.0)
-                volume = min(1.0, velocity / 127.0 * MIDI_VOLUME)  # Use constant from consts.py
+                volume = min(1.0, velocity / 127.0 * MIDI_VOLUME)
                 
                 # Generate a simple sine wave at the note's frequency
                 duration = 0.2  # Short duration for bounce
@@ -308,74 +241,4 @@ class MusicManager:
         
         # Only play bounce sound if no MIDI notes available or MIDI playback failed
         if self.bounce_sound:
-            print("Playing default bounce sound")
             self.bounce_sound.play()
-
-
-# Create sample MIDI file if needed and pretty_midi is available
-def create_sample_midi():
-    """Create a simple MIDI file for testing"""
-    if not PRETTY_MIDI_AVAILABLE:
-        print("pretty_midi not available, skipping MIDI file creation")
-        return
-        
-    try:
-        midi_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
-                                      'Musics', 'music.mid')
-        
-        if os.path.exists(midi_file_path):
-            return  # Don't overwrite existing file
-            
-        # Create a PrettyMIDI object
-        midi = pretty_midi.PrettyMIDI()
-        
-        # Create an instrument
-        instrument = pretty_midi.Instrument(program=0)  # Piano
-        
-        # Create notes for a richer melody with variety
-        notes = [60, 64, 67, 72, 67, 64, 60,  # C major arpeggio (C E G C G E C)
-                 62, 65, 69, 74, 69, 65, 62,  # D minor arpeggio (D F A D A F D)
-                 64, 67, 71, 76, 71, 67, 64]  # E minor arpeggio (E G B E B G E)
-        note_duration = 0.25  # Quarter-second notes for more variety
-        
-        # Add notes to the instrument with varying velocities
-        start_time = 0.0
-        for pitch in notes:
-            # Add some velocity variation for dynamic range
-            velocity = random.randint(70, 110)
-            
-            note = pretty_midi.Note(
-                velocity=velocity,
-                pitch=pitch,
-                start=start_time,
-                end=start_time + note_duration
-            )
-            instrument.notes.append(note)
-            start_time += note_duration
-        
-        # Add the instrument to the MIDI data
-        midi.instruments.append(instrument)
-        
-        # Write out the MIDI file
-        midi.write(midi_file_path)
-        print(f"Created sample MIDI file with {len(notes)} varied notes at: {midi_file_path}")
-        
-    except Exception as e:
-        print(f"Error creating sample MIDI file: {e}")
-
-if __name__ == "__main__":
-    # Initialize pygame
-    pygame.init()
-    pygame.mixer.init()
-    
-    # Create sample MIDI file and ensure sound directory exists
-    sound_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Musics')
-    if not os.path.exists(sound_dir):
-        os.makedirs(sound_dir)
-        print(f"Created Musics directory: {sound_dir}")
-    
-    create_sample_midi()
-    
-    # Test music manager
-    manager = MusicManager.get_instance()
-    print("Music manager initialized and ready")

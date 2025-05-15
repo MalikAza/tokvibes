@@ -11,7 +11,7 @@ def install_packages():
     required_packages = [
         "pygame",
         "numpy",
-        "setuptools"  # Add setuptools to required packages
+        "setuptools"
     ]
     
     # Optional packages (will be skipped if installation fails)
@@ -39,80 +39,19 @@ def install_packages():
             print(f"Note: Optional package {package} could not be installed.")
             print(f"Game will still work, but with reduced functionality.")
 
-def create_sound_files():
-    """Create sound files needed for the game"""
-    print("\nCreating sound files...")
+def create_directories():
+    """Create necessary directories"""
+    print("\nSetting up directories...")
     
-    # Create Musics directory if it doesn't exist
+    # Create Musics directory
     src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
     music_dir = os.path.join(src_dir, "Musics")
+    midi_dir = os.path.join(music_dir, "MIDI")
     
-    if not os.path.exists(music_dir):
-        os.makedirs(music_dir)
-        print(f"Created directory: {music_dir}")
-    
-    # Create simple WAV files for bounce and hmm sounds
-    bounce_path = os.path.join(music_dir, "bounce.wav")
-    hmm_path = os.path.join(music_dir, "hmm.wav")
-    
-    # Only create files if they don't exist
-    if not os.path.exists(bounce_path) and not os.path.exists(bounce_path.replace('.wav', '.mp3')):
-        create_simple_wav_file(bounce_path, frequency=800, duration=0.3, is_hmm=False)
-    
-    if not os.path.exists(hmm_path) and not os.path.exists(hmm_path.replace('.wav', '.mp3')):
-        create_simple_wav_file(hmm_path, frequency=150, duration=0.5, is_hmm=True)
-    
-    print("Sound files created successfully!")
-
-def create_simple_wav_file(filepath, frequency=440, duration=0.5, is_hmm=False):
-    """Create a simple WAV file without external dependencies"""
-    try:
-        import wave
-        import struct
-        import math
-        
-        # WAV parameters
-        sample_rate = 44100
-        num_samples = int(sample_rate * duration)
-        
-        # Create wave file
-        with wave.open(filepath, 'w') as wav_file:
-            wav_file.setparams((1, 2, sample_rate, 0, 'NONE', 'not compressed'))
-            
-            # Generate samples
-            samples = []
-            for i in range(num_samples):
-                t = float(i) / sample_rate
-                
-                if is_hmm:
-                    # Create a more complex hmm sound with harmonics
-                    value = int(32767 * 0.5 * (
-                        math.sin(2 * math.pi * frequency * t) + 
-                        0.3 * math.sin(2 * math.pi * frequency * 2 * t)
-                    ))
-                    
-                    # Apply envelope for hmm sound
-                    if t < 0.1:
-                        value = int(value * (t / 0.1))
-                    elif t > duration - 0.2:
-                        value = int(value * ((duration - t) / 0.2))
-                else:
-                    # Create bounce sound with quick decay
-                    decay = math.exp(-10 * t)
-                    value = int(32767 * 0.5 * math.sin(2 * math.pi * frequency * t) * decay)
-                
-                # Pack value as signed short
-                packed_value = struct.pack('h', value)
-                samples.append(packed_value)
-            
-            # Write samples to file
-            wav_file.writeframes(b''.join(samples))
-        
-        print(f"Created {filepath}")
-        
-    except Exception as e:
-        print(f"Failed to create {filepath}: {e}")
-        print("You'll need to provide your own sound files.")
+    for directory in [music_dir, midi_dir]:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+            print(f"Created directory: {directory}")
 
 def main():
     """Main setup function"""
@@ -132,11 +71,13 @@ def main():
         print("\nWarning: Failed to initialize Pygame.")
         print("The game may not work correctly.")
     
-    # Create sound files
-    create_sound_files()
+    # Create necessary directories
+    create_directories()
     
     print("\nSetup complete! You can now run the game.")
     print("To start the game, run: python -m src.main")
+    print("\nNote: You need to place MIDI files in the src/Musics/MIDI directory")
+    print("      to enable MIDI-based sound effects.")
 
 if __name__ == "__main__":
     main()
