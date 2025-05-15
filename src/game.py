@@ -39,7 +39,7 @@ class Game:
                 center=self.center,
                 circle_number=i,
                 hole_position=(i*HOLE_SHIFT)%360,
-                displayed=i<CIRCLE_NUMBERS_DISPLAY
+                displayed= i < CIRCLE_NUMBERS_DISPLAY
             )
             for i in range(self.circles_number)
         ]
@@ -134,16 +134,15 @@ class Game:
     def _update_display(self) -> None:
         self.screen.fill(BLACK)
 
-        # TODO: display more circles if possible
-        # if len(self.circles) < CIRCLE_NUMBERS_DISPLAY:
-        #     for i in range(len(self.circles), CIRCLE_NUMBERS_DISPLAY):
-        #         circle - self.circles[i]
-        #         circle.displayed = True
-        #         print(f"Circle {i} displayed")
+        displayed_circles = [c for c in self.circles if c.displayed]
+        if len(displayed_circles) < CIRCLE_NUMBERS_DISPLAY:
+            for circle in self.circles:
+                if not circle.displayed:
+                    circle.display()  
+                    break
 
-        # display only the first CIRCLE_NUMBERS_DISPLAY circles
-        for i in range(min(len(self.circles), CIRCLE_NUMBERS_DISPLAY)):
-            circle = self.circles[i]
+        displayed_circles = [c for c in self.circles if c.displayed]
+        for circle in displayed_circles:
             circle.draw(self.screen)
 
         for ball in self.balls:

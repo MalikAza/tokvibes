@@ -20,7 +20,7 @@ HOLE_SHIFT = -15  # Shift of the hole in degrees
 DEFAULT_CIRCLE_NUMBERS = 30 # total number of circles
 CIRCLE_NUMBERS_DISPLAY = 10
 CIRCLE_FADE_OUT_FRAME = 30  
-CIRCLE_FADE_IN_FRAME = 100
+CIRCLE_FADE_IN_FRAME = 500
 
 # Colors
 WHITE = (255, 255, 255)

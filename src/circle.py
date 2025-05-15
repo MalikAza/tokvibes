@@ -11,8 +11,8 @@ class Circle:
         self,
         center: pygame.Vector2,
         circle_number: int,
-        displayed: bool = False,
         hole_position: float = 0,
+        displayed: bool = False
     ):
         self.x = center.x
         self.y = center.y
@@ -25,11 +25,12 @@ class Circle:
         self.angle = 0
         self.points_hole = []
         self.active = True
-        self.displayed = displayed
+        self.displayed = False
         self.desactivate_frame = CIRCLE_FADE_OUT_FRAME
-        self.activation_frame = 0
+        self.activation_frame = CIRCLE_FADE_IN_FRAME if displayed else 0
         
     def update(self, number: int):
+        # Always update rotation for active circles regardless of display status
         if self.active or self.desactivate_frame > 0:
             # update the radius depending of the ZOOM_SPEED only if the first circle is > FIRST_INNER_CIRCLE_RADIUS
             if self.radius > FIRST_INNER_CIRCLE_RADIUS + (CIRCLE_WIDTH + CIRCLE_SPACING) * number:
@@ -40,31 +41,37 @@ class Circle:
             # Update hole position
             self.hole_position = (self.hole_position + self.rotation_speed) % (2 * math.pi)
         
-        if not self.active and self.desactivate_frame > 0:
+        # Update fade-out frame counter
+        if not self.active and self.desactivate_frame > 0 and self.displayed:
             self.desactivate_frame -= 1
         
-        if self.activation_frame < CIRCLE_FADE_IN_FRAME and self.active and self.displayed:
-            print(f"Circle {number} activated")
+        # Only increment activation_frame for displayed circles
+        if self.displayed and self.activation_frame < CIRCLE_FADE_IN_FRAME and self.active:
             self.activation_frame += 1
-
 
     def desactivate(self):
         self.active = False
-        
+
+    def display(self):
+        self.displayed = True
+        self.activation_frame = 0
         
 
     def draw(self, screen: pygame.Surface):
-        if not self.active and self.desactivate_frame <= 0:
+        # Don't draw if not displayed or fully faded out
+        if not self.displayed or (not self.active and self.desactivate_frame <= 0):
             return
         
+        # Calculate the arc angles
+        start_angle = self.angle + self.hole_position
+        end_angle = start_angle + self.hole_size
+        
+        # Handle fade-out (deactivated circles)
         if not self.active and self.desactivate_frame > 0:
-            # Draw the circle with a fade-out effect using a transparent surface
             fade_surface = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
             alpha = int(255 * (self.desactivate_frame / CIRCLE_FADE_OUT_FRAME))
             color = (*self.color[:3], alpha) 
             
-            start_angle = self.angle + self.hole_position
-            end_angle = start_angle + self.hole_size
             pygame.draw.arc(
                 fade_surface, 
                 color, 
@@ -76,14 +83,13 @@ class Circle:
             screen.blit(fade_surface, (0, 0))
             return
         
-        # Draw the circle with a fade-in effect using a transparent surface
-        if self.active and self.activation_frame < CIRCLE_FADE_IN_FRAME:
+        # Handle fade-in (newly displayed circles)
+        if self.activation_frame < CIRCLE_FADE_IN_FRAME:
             fade_surface = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+            # Correct alpha calculation: start at 0, go to 255
             alpha = int(255 * (self.activation_frame / CIRCLE_FADE_IN_FRAME))
             color = (*self.color[:3], alpha) 
             
-            start_angle = self.angle + self.hole_position
-            end_angle = start_angle + self.hole_size
             pygame.draw.arc(
                 fade_surface, 
                 color, 
@@ -93,14 +99,8 @@ class Circle:
                 self.width
             )
             screen.blit(fade_surface, (0, 0))
-
-
-        # Draw the circle full activateddd
-        if self.active and self.activation_frame <= CIRCLE_FADE_IN_FRAME and self.displayed:
-            start_angle = self.angle + self.hole_position
-            end_angle = start_angle + self.hole_size
-            
-            # Draw the rest of the circle in white
+        else:
+            # Draw fully visible circle
             pygame.draw.arc(
                 screen, 
                 self.color, 
