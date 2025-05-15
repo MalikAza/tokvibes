@@ -6,7 +6,7 @@ import pygame
 
 from .circle import Circle
 from .ball import Ball
-from .consts import BLACK, CIRCLE_NUMBERS, CIRCLE_NUMBERS_DISPLAY, FPS, HEIGHT, RED, WIDTH, HOLE_SHIFT, WHITE
+from .consts import BLACK, CIRCLE_NUMBERS, CIRCLE_NUMBERS_DISPLAY, FPS, GREEN, HEIGHT, RED, SCORE_POSITION_1, SCORE_POSITION_2, WIDTH, HOLE_SHIFT, WHITE
 
 
 
@@ -19,6 +19,7 @@ class Game:
         self.num_circles = CIRCLE_NUMBERS
         
         self.circles = []
+        self.balls = []
         for i in range(self.num_circles):
             circle = Circle(
                 center=self.center,
@@ -28,7 +29,9 @@ class Game:
             self.circles.append(circle)
         
         # Create ball in the center
-        self.ball = Ball(center=self.center,)
+        self.balls = [Ball(center=self.center, score_position=SCORE_POSITION_1),
+                      Ball(center=self.center, color=GREEN, score_position=SCORE_POSITION_2)
+                      ]
         
         # Game state
         self.score = 0
@@ -59,7 +62,8 @@ class Game:
             # hanle game
             if not self.game_over:
                 # Update ball position
-                self.ball.move()
+                for ball in self.balls:
+                    ball.move()
                 
                 # Update circle rotations/zoom
                 for i, circle in enumerate(self.circles):
@@ -68,8 +72,8 @@ class Game:
                 # Check for collisions and escapes, and update score
                 for circle in self.circles:
                     if circle.active:
-                        if self.ball.check_collision(circle):
-                            self.score += 1
+                        for ball in self.balls:
+                            ball.check_collision(circle)
                 
                 
                 # End game if no circles are active
@@ -86,12 +90,10 @@ class Game:
                 circle = self.circles[i]
                 circle.draw(self.screen)
 
-            self.ball.draw(self.screen)
-            
-
-            # Display score (optional)
-            self.display_text(f"Score: {self.score}", 20, 20)
-            
+            # Draw balls
+            for ball in self.balls:
+                ball.draw(self.screen)
+                        
             if self.game_over:
                 self.display_text("Game Over! Press R to restart", WIDTH//2, HEIGHT//2, center=True)
             if self.debug_bounce:  # Only show when debug is enabled
@@ -120,7 +122,6 @@ class Game:
                 if len(points_hole) > 1:
                     pygame.draw.lines(self.screen, RED, False, points_hole, 5)
     
-    # Draw a diagonal line for reference
     def display_text(self, text, x, y, center=False):
         font = pygame.font.SysFont(None, 36)
         text_surface = font.render(text, True, WHITE)
