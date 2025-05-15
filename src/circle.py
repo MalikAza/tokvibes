@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .ball import Ball
-from .consts import CIRCLE_ROTATION_SPEED, CIRCLE_SPACING, FIRST_INNER_CIRCLE_RADIUS, HOLE_SHIFT, WHITE, HOLE_SIZE_DEGREES, CIRCLE_WIDTH, GRAVITY
+from .consts import CIRCLE_ROTATION_SPEED, CIRCLE_SPACING, FIRST_INNER_CIRCLE_RADIUS, HOLE_SHIFT, WHITE, HOLE_SIZE_DEGREES, CIRCLE_WIDTH, GRAVITY, ZOOM_SPEED
 
 
 class Circle:
@@ -26,20 +26,29 @@ class Circle:
         self.angle = 0
         self.points_hole = []
         
-    def update(self):
+    def update(self, number: int):
         if self.active:
+            # update the radius depending of the ZOOM_SPEED only if the first circle is > FIRST_INNER_CIRCLE_RADIUS
+            if self.radius > FIRST_INNER_CIRCLE_RADIUS + (CIRCLE_WIDTH + CIRCLE_SPACING) * number:
+                self.radius -= ZOOM_SPEED
+            
             # Rotate the circle
             self.angle = (self.angle + self.rotation_speed) % (2 * math.pi)
             # Update hole position
             self.hole_position = (self.hole_position + self.rotation_speed) % (2 * math.pi)
                         
 
-    
+    def desactivate(self):
+        self.active = False
+        print("Ball in hole")
+        # TODO: faded explosion animation of the circle
+        
 
     def draw(self, screen: pygame.Surface):
+        # TODO: maybe if first time drawn, fade in the circle?
         if not self.active:
             return
-            
+        
         # Draw circle with a hole
         start_angle = self.angle + self.hole_position
         end_angle = start_angle + self.hole_size

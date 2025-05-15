@@ -1,4 +1,5 @@
 import math
+import os
 import random
 import numpy as np
 import pygame
@@ -40,7 +41,13 @@ class Ball:
             self.dy = 0
         return
         
-    
+    def play_bounce_sound(self):
+        #TODO: Implement sound playing
+        # Placeholder for sound playing
+        current_dir = os.path.dirname(os.path.abspath(__file__)) 
+        music_dir = os.path.join(current_dir, 'Musics/bounce.mp3')
+        pygame.mixer.Sound(music_dir).play(0)
+
     def check_collision(self, circle: 'Circle'):
         # Calculate distance from ball center to circle center
         dx = self.x - circle.x
@@ -64,31 +71,23 @@ class Ball:
             # Check if ball is in the hole
             ball_angle = math.atan2(-(self.y - circle.y), (self.x - circle.x))
             
-            # Normalize angles to same range
-            if ball_angle < 0:
-                ball_angle += 2 * math.pi
-            while hole_start_angle < 0:
-                hole_start_angle += 2 * math.pi
-            while hole_end_angle < 0:
-                hole_end_angle += 2 * math.pi
+            # Normalize angles to the range [0, 2*pi]
+            ball_angle %= 2 * math.pi
+            hole_start_angle %= 2 * math.pi
+            hole_end_angle %= 2 * math.pi
         
-            # Check if angle is within the hole range
-            in_hole = False
-            print(f"Ball angle: {math.degrees(ball_angle)}")
-            print(f"Hole start angle: {math.degrees(hole_start_angle)}")
-            print(f"Hole end angle: {math.degrees(hole_end_angle)}")
-            print(f"Distance: {distance}, Circle radius: {circle.radius}")
-
             if hole_start_angle <= hole_end_angle:
                 in_hole = hole_start_angle <= ball_angle <= hole_end_angle
             else:  # Handle case where hole crosses the 0 angle
                 in_hole = ball_angle >= hole_start_angle or ball_angle <= hole_end_angle
             
             if in_hole:
-                print("Ball in hole")
-                circle.active = False
-                return
+                circle.desactivate()
+                # score += 1
+                return True
             
+            ### Bounce ###
+            self.play_bounce_sound()
             # Normal collision handling
             nx = dx / distance
             ny = dy / distance
@@ -106,6 +105,9 @@ class Ball:
                 scale = MIN_VELOCITY / total_velocity
                 self.dx *= scale
                 self.dy *= scale
+        # Score        
+        return False
+                
           
 
 
