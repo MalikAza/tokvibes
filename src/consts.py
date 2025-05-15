@@ -32,6 +32,16 @@ FIRE_LIFETIME = 60           # Lifetime of fire particles in frames
 FIRE_SPEED = 0.5             # Base speed of fire particles
 SCORE_EFFECT_DURATION = 2    # Duration of score effect in seconds
 
+# Game timer settings
+GAME_TIMER_SECONDS = 20      # Game duration in seconds
+TIMER_RADIUS = 40            # Size of timer circle
+TIMER_POSITION = (WIDTH - 60, 60)  # Position in top right
+TIMER_EXPLOSION_THRESHOLD = 10  # When to start explosions (seconds remaining)
+TIMER_PULSE_SPEED = 0.1      # Speed of pulsing animation
+TIMER_CRITICAL_COLOR = (255, 50, 50)  # Red when time is low
+TIMER_WARNING_COLOR = (255, 165, 0)    # Orange for warning
+TIMER_NORMAL_COLOR = (0, 255, 255)     # Cyan for normal time
+
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
