@@ -15,14 +15,21 @@ class Ball:
     def __init__(
         self,
         center: pygame.Vector2,
-        radius=BALL_RADIUS
+        color=RED,
+        radius=BALL_RADIUS,
+        score_position=(0, 0)
     ):
         self.x = center.x
         self.y = center.y
         self.radius = radius
-        self.dx = random.choice([-4, 4])
+        self.dx = random.uniform(-5, 5) 
+        while abs(self.dx) < 2:
+            self.dx = random.uniform(-5, 5)
         self.dy = 0 
         self.gravity = GRAVITY
+        self.color = color
+        self.score = 0
+        self.score_position = score_position
     
     def move(self):
         # Apply gravity
@@ -83,8 +90,7 @@ class Ball:
             
             if in_hole:
                 circle.desactivate()
-                # score += 1
-                return True
+                self.score += 1
             
             ### Bounce ###
             self.play_bounce_sound()
@@ -105,12 +111,16 @@ class Ball:
                 scale = MIN_VELOCITY / total_velocity
                 self.dx *= scale
                 self.dy *= scale
-        # Score        
-        return False
-                
+            
           
 
 
     
     def draw(self, screen: pygame.Surface):
-        pygame.draw.circle(screen, RED, (int(self.x), int(self.y)), self.radius)
+        pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)
+        # draw score at score_position
+        if self.score_position != (0, 0):
+            font = pygame.font.Font(None, 36)
+            text = font.render(str(self.score), True, self.color)
+            screen.blit(text, self.score_position)
+
