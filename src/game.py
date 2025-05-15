@@ -35,12 +35,17 @@ class Game:
 
         # Elements
         self.circles = [
-            Circle(center=self.center, circle_number=i, hole_position=(i*HOLE_SHIFT)%360)
+            Circle(
+                center=self.center,
+                circle_number=i,
+                hole_position=(i*HOLE_SHIFT)%360,
+                displayed=i<CIRCLE_NUMBERS_DISPLAY
+            )
             for i in range(self.circles_number)
         ]
         self.balls = [
-            Ball(center=self.center, score_position=SCORE_POSITION_1),
-            Ball(center=self.center, color=GREEN, score_position=SCORE_POSITION_2)
+            Ball(center=self.center, color=GREEN, score_position=SCORE_POSITION_1, text="Yes"),
+            Ball(center=self.center, score_position=SCORE_POSITION_2, text="No")
         ]
         
         # Game state
@@ -57,6 +62,7 @@ class Game:
                 match event.key:
                     case pygame.K_r:
                         self.__init__(self.screen, self.circles_number)
+                        self.game_over = False
 
                     case pygame.K_d:
                         self.debug_bounce = not self.debug_bounce
@@ -76,16 +82,21 @@ class Game:
         for i, circle in enumerate(self.circles):
             circle.update(i) # Update circle rotations/zoom
 
-            if circle.active:
-                active_circles.append(circle) # Keeping only active circles
+            # Keeping only active circles
+            if circle.active or circle.desactivate_frame > 0:
+                active_circles.append(circle)
                 
-                # Check for collisions, escapes, and update score
+            # Check for collisions, escapes, and update score
+            if circle.active:
                 for ball in self.balls:
                     ball.check_collision(circle)
 
         self.circles = active_circles
 
-        if all(not circle.active for circle in self.circles):
+        if all(
+            not circle.active and circle.desactivate_frame <= 0
+            for circle in self.circles
+        ):
             self.game_over = True
 
     def _draw_debug_info(self):
@@ -122,6 +133,13 @@ class Game:
 
     def _update_display(self) -> None:
         self.screen.fill(BLACK)
+
+        # TODO: display more circles if possible
+        # if len(self.circles) < CIRCLE_NUMBERS_DISPLAY:
+        #     for i in range(len(self.circles), CIRCLE_NUMBERS_DISPLAY):
+        #         circle - self.circles[i]
+        #         circle.displayed = True
+        #         print(f"Circle {i} displayed")
 
         # display only the first CIRCLE_NUMBERS_DISPLAY circles
         for i in range(min(len(self.circles), CIRCLE_NUMBERS_DISPLAY)):

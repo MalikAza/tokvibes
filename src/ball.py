@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .circle import Circle
 
-from .consts import (BALL_RADIUS, BOUNCE_DAMPENING, HEIGHT, MIN_VELOCITY, RED, GRAVITY, WIDTH)
+from .consts import (BALL_RADIUS, BALL_TRAIL_LENGTH, BOUNCE_DAMPENING, HEIGHT, MIN_VELOCITY, RED, GRAVITY, WIDTH)
 
 
 class Ball:
@@ -17,7 +17,8 @@ class Ball:
         center: pygame.Vector2,
         color=RED,
         radius=BALL_RADIUS,
-        score_position=(0, 0)
+        score_position=(0, 0),
+        text = "yes",
     ):
         self.x = center.x
         self.y = center.y
@@ -30,6 +31,8 @@ class Ball:
         self.color = color
         self.score = 0
         self.score_position = score_position
+        self.text = text
+        self.old_pos = []
     
     def move(self):
         # Apply gravity
@@ -38,6 +41,10 @@ class Ball:
         # Update position
         self.x += self.dx
         self.y += self.dy
+        # Update old position
+        self.old_pos.append((self.x, self.y))
+        if len(self.old_pos) > BALL_TRAIL_LENGTH:
+            self.old_pos.pop(0)
 
         # Check for ball out of bounds
         if (self.x < 0 or self.x > WIDTH or 
@@ -46,6 +53,7 @@ class Ball:
             self.y = HEIGHT // 2
             self.dx = random.choice([-4, 4])
             self.dy = 0
+            self.old_pos = []
         return
         
     def play_bounce_sound(self):
@@ -118,10 +126,34 @@ class Ball:
 
     
     def draw(self, screen: pygame.Surface):
+
+        # Add a trail behind the ball
+        if len(self.old_pos) > 1:
+            trail_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)  # Create a transparent surface
+            for i in range(len(self.old_pos) - 1):
+                size = int(self.radius - (self.radius / len(self.old_pos)) * (len(self.old_pos) - i - 1))
+                # fade in
+                alpha = int(255 * (i / len(self.old_pos)))
+                color = (*self.color[:3], alpha)  # Add alpha to the color
+                # position must be calculated at the surface of the ball (depending of the radius and the direction)
+                pygame.draw.circle(trail_surface, color, self.old_pos[i], size)
+            screen.blit(trail_surface, (0, 0))
+
+            
         pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)
-        # draw score at score_position
+        # Draw inner circle in black
+        pygame.draw.circle(screen, (0, 0, 0), (int(self.x), int(self.y)), self.radius - 2)
+        # Write self.text in it
+        font = pygame.font.Font(None, 15)
+        text = font.render(self.text, True, (255, 255, 255))
+        text_rect = text.get_rect(center=(self.x, self.y))
+        screen.blit(text, text_rect)
+
+        
+
+        # Draw score at score_position
         if self.score_position != (0, 0):
             font = pygame.font.Font(None, 36)
-            text = font.render(str(self.score), True, self.color)
+            text = font.render(self.text + ": " + str(self.score), True, self.color)
             screen.blit(text, self.score_position)
 
