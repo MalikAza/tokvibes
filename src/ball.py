@@ -64,21 +64,11 @@ class Ball:
             # Check if ball is in the hole
             ball_angle = math.atan2(-(self.y - circle.y), (self.x - circle.x))
             
-            # Normalize angles to same range
-            if ball_angle < 0:
-                ball_angle += 2 * math.pi
-            while hole_start_angle < 0:
-                hole_start_angle += 2 * math.pi
-            while hole_end_angle < 0:
-                hole_end_angle += 2 * math.pi
+            # Normalize angles to the range [0, 2*pi]
+            ball_angle %= 2 * math.pi
+            hole_start_angle %= 2 * math.pi
+            hole_end_angle %= 2 * math.pi
         
-            # Check if angle is within the hole range
-            in_hole = False
-            print(f"Ball angle: {math.degrees(ball_angle)}")
-            print(f"Hole start angle: {math.degrees(hole_start_angle)}")
-            print(f"Hole end angle: {math.degrees(hole_end_angle)}")
-            print(f"Distance: {distance}, Circle radius: {circle.radius}")
-
             if hole_start_angle <= hole_end_angle:
                 in_hole = hole_start_angle <= ball_angle <= hole_end_angle
             else:  # Handle case where hole crosses the 0 angle
