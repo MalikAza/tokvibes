@@ -1,4 +1,5 @@
 import math
+import os
 import random
 import numpy as np
 import pygame
@@ -40,7 +41,13 @@ class Ball:
             self.dy = 0
         return
         
-    
+    def play_bounce_sound(self):
+        #TODO: Implement sound playing
+        # Placeholder for sound playing
+        current_dir = os.path.dirname(os.path.abspath(__file__)) 
+        music_dir = os.path.join(current_dir, 'Musics/bounce.mp3')
+        pygame.mixer.Sound(music_dir).play(0)
+
     def check_collision(self, circle: 'Circle'):
         # Calculate distance from ball center to circle center
         dx = self.x - circle.x
@@ -75,10 +82,12 @@ class Ball:
                 in_hole = ball_angle >= hole_start_angle or ball_angle <= hole_end_angle
             
             if in_hole:
-                print("Ball in hole")
-                circle.active = False
-                return
+                circle.desactivate()
+                # score += 1
+                return True
             
+            ### Bounce ###
+            self.play_bounce_sound()
             # Normal collision handling
             nx = dx / distance
             ny = dy / distance
@@ -96,6 +105,9 @@ class Ball:
                 scale = MIN_VELOCITY / total_velocity
                 self.dx *= scale
                 self.dy *= scale
+        # Score        
+        return False
+                
           
 
 

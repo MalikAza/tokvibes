@@ -6,7 +6,7 @@ import pygame
 
 from .circle import Circle
 from .ball import Ball
-from .consts import BLACK, CIRCLE_NUMBERS, FPS, HEIGHT, RED, WIDTH, HOLE_SHIFT, WHITE
+from .consts import BLACK, CIRCLE_NUMBERS, CIRCLE_NUMBERS_DISPLAY, FPS, HEIGHT, RED, WIDTH, HOLE_SHIFT, WHITE
 
 
 
@@ -34,11 +34,15 @@ class Game:
         self.score = 0
         self.game_over = False
 
-        self.debug_bounce = True
+        self.debug_bounce = False
         
+    # # # #
+    # MAIN #
+    # # # #   
     def run(self):
         running = True
         while running:
+            # Handle events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -49,31 +53,42 @@ class Game:
                         self.game_over = False
                     elif event.key == pygame.K_ESCAPE:
                         running = False
+                    elif event.key == pygame.K_d:
+                        self.debug_bounce = not self.debug_bounce
             
+            # hanle game
             if not self.game_over:
                 # Update ball position
                 self.ball.move()
                 
-                # Update circle rotations
-                for circle in self.circles:
-                    circle.update()
+                # Update circle rotations/zoom
+                for i, circle in enumerate(self.circles):
+                    circle.update(i)
                 
-                # Check for collisions and escapes
+                # Check for collisions and escapes, and update score
                 for circle in self.circles:
                     if circle.active:
-                        self.ball.check_collision(circle)  # Remove screen parameter
+                        if self.ball.check_collision(circle):
+                            self.score += 1
                 
                 
-                # Check win condition
+                # End game if no circles are active
                 if all(not circle.active for circle in self.circles):
                     self.game_over = True
             
             # Draw everything
             self.screen.fill(BLACK)
-            for circle in self.circles:
+            # delete inactive circles
+            self.circles = [circle for circle in self.circles if circle.active]
+           
+            # display only the first CIRCLE_NUMBERS_DISPLAY circles
+            for i in range(min(len(self.circles), CIRCLE_NUMBERS_DISPLAY)):
+                circle = self.circles[i]
                 circle.draw(self.screen)
+
             self.ball.draw(self.screen)
             
+
             # Display score (optional)
             self.display_text(f"Score: {self.score}", 20, 20)
             
