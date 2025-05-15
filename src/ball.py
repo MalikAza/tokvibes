@@ -151,9 +151,44 @@ class Ball:
 
         
 
-        # Draw score at score_position
+        # Draw score with pill background at score_position
         if self.score_position != (0, 0):
-            font = pygame.font.Font(None, 36)
-            text = font.render(self.text + ": " + str(self.score), True, self.color)
-            screen.blit(text, self.score_position)
+            # Create smaller font for the text
+            font = pygame.font.Font(None, 28)
+            text_content = f"{self.text}: {self.score}"
+            text = font.render(text_content, True, (255, 255, 255))  # White text
+            
+            # Calculate pill dimensions
+            padding_x, padding_y = 15, 8
+            pill_width = text.get_width() + padding_x * 2
+            pill_height = text.get_height() + padding_y * 2
+            
+            # Create the pill rect
+            pill_rect = pygame.Rect(
+                self.score_position[0] - padding_x, 
+                self.score_position[1] - padding_y,
+                pill_width, 
+                pill_height
+            )
+            
+            # Draw the outer pill (colored border) with the ball's color
+            pygame.draw.rect(screen, self.color, pill_rect, border_radius=pill_height//2)
+            
+            # Draw the inner pill (black interior) - 2 pixels smaller on each side
+            inner_pill_rect = pygame.Rect(
+                pill_rect.x + 2,
+                pill_rect.y + 2,
+                pill_rect.width - 4,
+                pill_rect.height - 4
+            )
+            pygame.draw.rect(screen, (0, 0, 0), inner_pill_rect, border_radius=pill_height//2 - 1)
+            
+            # Center text in the pill
+            text_pos = (
+                self.score_position[0] - padding_x + pill_width//2 - text.get_width()//2,
+                self.score_position[1] - padding_y + pill_height//2 - text.get_height()//2
+            )
+            
+            # Draw text
+            screen.blit(text, text_pos)
 
