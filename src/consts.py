@@ -2,7 +2,7 @@ WIDTH = 600
 HEIGHT = 800
 FPS = 60
 GRAVITY = 0.1
-ZOOM_SPEED = 0.2
+ZOOM_SPEED = 0.25
 
 BALL_RADIUS = 17  # Default radius of the ball
 BOUNCE_DAMPENING = 0.98
@@ -20,7 +20,7 @@ HOLE_SHIFT = -15  # Shift of the hole in degrees
 DEFAULT_CIRCLE_NUMBERS = 30 # total number of circles
 CIRCLE_NUMBERS_DISPLAY = 10
 CIRCLE_FADE_OUT_FRAME = 30  
-CIRCLE_FADE_IN_FRAME = 500
+CIRCLE_FADE_IN_FRAME = 30
 
 # Colors
 WHITE = (255, 255, 255)

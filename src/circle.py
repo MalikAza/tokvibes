@@ -25,7 +25,7 @@ class Circle:
         self.angle = 0
         self.points_hole = []
         self.active = True
-        self.displayed = False
+        self.displayed = displayed
         self.desactivate_frame = CIRCLE_FADE_OUT_FRAME
         self.activation_frame = CIRCLE_FADE_IN_FRAME if displayed else 0
         
