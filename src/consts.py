@@ -26,6 +26,12 @@ CIRCLE_FADE_IN_FRAME = 40
 DISSOLVE_SEGMENTS = 40
 MIN_CIRCLE_WIDTH = 1 # in pixel so cant be a float
 
+# Fire effect settings
+FIRE_PARTICLES = 60          # Maximum number of fire particles per pill
+FIRE_LIFETIME = 60           # Lifetime of fire particles in frames
+FIRE_SPEED = 0.5             # Base speed of fire particles
+SCORE_EFFECT_DURATION = 2    # Duration of score effect in seconds
+
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
