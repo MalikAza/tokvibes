@@ -1,19 +1,17 @@
 import math
-import os
 import random
-import numpy as np
 import pygame
 from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
     from .circle import Circle
+    from .type import ColorType, PositionType
 
 from .consts import (
     BALL_RADIUS, BALL_TRAIL_LENGTH, BOUNCE_DAMPENING, HEIGHT, MIN_VELOCITY, 
-    RED, GRAVITY, WIDTH, FIRE_PARTICLES, FIRE_LIFETIME, FIRE_SPEED, 
+    GRAVITY, WIDTH, FIRE_PARTICLES, FIRE_LIFETIME, FIRE_SPEED, 
     SCORE_EFFECT_DURATION, FPS, BALL_TEXT_SIZE
 )
-
 # Import the music manager
 from .music_manager import MusicManager
 
@@ -79,14 +77,14 @@ class FireParticle:
 class Ball:
     def __init__(
         self,
-        center: pygame.Vector2,
-        color=RED,
-        radius=BALL_RADIUS,
-        score_position=(0, 0),
-        text="yes",
+        position: pygame.Vector2,
+        score_position: 'PositionType',
+        color: 'ColorType',
+        text: str = "",
+        radius: int = BALL_RADIUS,
     ):
-        self.x = center.x
-        self.y = center.y
+        self.x = position.x
+        self.y = position.y
         self.radius = radius
         self.dx = random.uniform(-5, 5) 
         while abs(self.dx) < 2:

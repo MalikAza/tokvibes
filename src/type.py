@@ -1,6 +1,6 @@
 from abc import ABC
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
 
 from .ball import Ball
 from .circle import Circle
@@ -13,3 +13,6 @@ class Args:
 class GameType(ABC):
     circles: List[Circle]
     balls: List[Ball]
+
+PositionType = Tuple[int, int]
+ColorType = Tuple[int, int , int]

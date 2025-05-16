@@ -1,10 +1,19 @@
 import math
-import numpy as np
 import pygame
 import random
-from typing import TYPE_CHECKING
 
-from .consts import CIRCLE_FADE_IN_FRAME, CIRCLE_ROTATION_SPEED, CIRCLE_SPACING, FIRST_INNER_CIRCLE_RADIUS, HOLE_SHIFT, WHITE, HOLE_SIZE_DEGREES, CIRCLE_WIDTH, CIRCLE_FADE_OUT_FRAME, ZOOM_SPEED, DISSOLVE_SEGMENTS, MIN_CIRCLE_WIDTH
+from .consts import (
+    CIRCLE_FADE_IN_FRAME,
+    CIRCLE_ROTATION_SPEED,
+    CIRCLE_SPACING,
+    FIRST_INNER_CIRCLE_RADIUS,
+    HOLE_SIZE_DEGREES,
+    CIRCLE_WIDTH,
+    CIRCLE_FADE_OUT_FRAME,
+    ZOOM_SPEED,
+    DISSOLVE_SEGMENTS,
+    Colors
+)
 
 
 class Circle:
@@ -19,7 +28,7 @@ class Circle:
         self.y = center.y
         self.width = CIRCLE_WIDTH
         self.original_width = CIRCLE_WIDTH  # Store original width for fading
-        self.color = WHITE
+        self.color = Colors.WHITE.value
         self.hole_position = math.radians(hole_position)
         self.hole_size = math.radians(HOLE_SIZE_DEGREES) 
         self.radius = FIRST_INNER_CIRCLE_RADIUS + circle_number * (CIRCLE_SPACING+CIRCLE_WIDTH)

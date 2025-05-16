@@ -1,4 +1,11 @@
 # Game window settings
+from enum import Enum
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .type import PositionType
+
+
 WIDTH = 600
 HEIGHT = 800
 FPS = 60
@@ -15,8 +22,8 @@ BALL_TRAIL_LENGTH = 25
 BALL_TEXT_SIZE = 20
 
 # Score display
-SCORE_POSITION_1 = (WIDTH//2 - 80, 30)
-SCORE_POSITION_2 = (WIDTH//2 + 20, 30)
+SCORE_POSITION_1: 'PositionType' = (WIDTH//2 - 80, 30)
+SCORE_POSITION_2: 'PositionType' = (WIDTH//2 + 20, 30)
 
 # Circle settings
 FIRST_INNER_CIRCLE_RADIUS = 130
@@ -38,17 +45,17 @@ FIRE_LIFETIME = 60
 FIRE_SPEED = 0.5
 SCORE_EFFECT_DURATION = 2
 
-# Colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
+class Colors(Enum):
+    WHITE = (255, 255, 255)
+    BLACK = (0, 0, 0)
+    RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
 
 # Timer settings
 TIMER_DURATION = 61
 TIMER_POSITION = (50, 50)
 TIMER_RADIUS = 30
-TIMER_COLOR = WHITE
+TIMER_COLOR = Colors.WHITE.value
 TIMER_FIRE_THRESHOLD = 12
 TIMER_BLINK_THRESHOLD = 8
 TIMER_MAX_PARTICLES = 80

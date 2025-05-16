@@ -9,14 +9,11 @@ from .circle import Circle
 from .ball import Ball
 from .timer import Timer
 from .consts import (
-    BLACK,
+    Colors,
     FPS,
-    GREEN,
-    RED,
     SCORE_POSITION_1,
     SCORE_POSITION_2,
     HOLE_SHIFT,
-    WHITE,
 )
 
 
@@ -50,8 +47,8 @@ class Game(GameType):
             for i in range(self.circles_number)
         ]
         self.balls = [
-            Ball(center=self.center, score_position=SCORE_POSITION_2, text="No"),
-            Ball(center=self.center, color=GREEN, score_position=SCORE_POSITION_1, text="Yes")
+            Ball(position=self.center, score_position=SCORE_POSITION_1, color=Colors.GREEN.value ,text="Yes"),
+            Ball(position=self.center, score_position=SCORE_POSITION_2, color=Colors.RED.value, text="No"),
         ]
 
     def _init_states(self) -> None:
@@ -126,7 +123,7 @@ class Game(GameType):
                         circle.y + circle.radius * math.sin(-angle)
                     ))
                 if len(points_hole) > 1:
-                    pygame.draw.lines(self.screen, RED, False, points_hole, 5)
+                    pygame.draw.lines(self.screen, Colors.RED.value, False, points_hole, 5)
     
     def _display_text(
         self,
@@ -136,14 +133,14 @@ class Game(GameType):
         center: bool = False
     ) -> None:
         font = pygame.font.SysFont(None, 36)
-        text_surface = font.render(text, True, WHITE)
+        text_surface = font.render(text, True, Colors.WHITE.value)
         text_rect = text_surface.get_rect(center=(x, y)) if center \
                     else text_surface.get_rect(topleft=(x, y))
         
         self.screen.blit(text_surface, text_rect)
 
     def _update_display(self) -> None:
-        self.screen.fill(BLACK)
+        self.screen.fill(Colors.BLACK.value)
 
         # Add one more circle at this frame if needed
         if sum(1 for c in self.circles if c.displayed) < self.circles_display:
