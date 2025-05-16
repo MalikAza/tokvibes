@@ -1,15 +1,9 @@
 import argparse
-from dataclasses import dataclass
 import pygame
 
+from .type import Args
 from .game import Game
 from .consts import DEFAULT_CIRCLE_NUMBERS_DISPLAY, DEFAULT_CIRCLE_NUMBERS, HEIGHT, WIDTH
-
-
-@dataclass
-class Args:
-    circles: int
-    circles_display: int
 
 def __parse_cli() -> Args:
     parser = argparse.ArgumentParser()
@@ -41,7 +35,7 @@ def __init_game() -> Game:
 
     args = __parse_cli()
 
-    return Game(screen, args.circles, args.circles_display)
+    return Game(screen, args)
 
 def run() -> None:
     game = __init_game()

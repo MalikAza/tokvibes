@@ -5,6 +5,7 @@ from typing import List
 import numpy as np
 import pygame
 
+from .type import Args
 from .circle import Circle
 from .ball import Ball
 from .timer import Timer
@@ -17,7 +18,6 @@ from .consts import (
     SCORE_POSITION_2,
     HOLE_SHIFT,
     WHITE,
-    TIMER_DURATION,
     SCREEN_SHAKE_INTENSITY,
     SCREEN_SHAKE_DURATION
 )
@@ -27,8 +27,7 @@ class Game:
     def __init__(
         self,
         screen: pygame.Surface,
-        circles_number: int,
-        circles_display: int
+        args: Args
     ) -> None:
         # Initialize sound system
         try:
@@ -39,8 +38,8 @@ class Game:
             
         self.screen = screen
         self.clock = pygame.time.Clock()
-        self.circles_number = circles_number
-        self.circles_display = circles_display
+        self.circles_number = args.circles
+        self.circles_display = args.circles_display
         self.center = pygame.Vector2(
             x=self.screen.get_width()//2,
             y=self.screen.get_height()//2
