@@ -32,7 +32,7 @@ class Circle:
         self.hole_position = math.radians(hole_position)
         self.hole_size = math.radians(HOLE_SIZE_DEGREES) 
         self.radius = FIRST_INNER_CIRCLE_RADIUS + id * (CIRCLE_SPACING+CIRCLE_WIDTH)
-        self.rotation_speed = CIRCLE_ROTATION_SPEED
+        self.rotation_speed = CIRCLE_ROTATION_SPEED + (id * (CIRCLE_ROTATION_SPEED/5)) # Arbitrary for the moment
         self.angle = 0
         self.points_hole = []
         self.active = True
