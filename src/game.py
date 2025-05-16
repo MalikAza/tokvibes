@@ -39,16 +39,26 @@ class Game(GameType):
     def _init_elements(self) -> None:
         self.circles = [
             Circle(
-                center=self.center,
-                circle_number=i,
+                id=i,
+                position=self.center,
                 hole_position=(i*HOLE_SHIFT)%360,
-                displayed= i < self.circles_display
+                displayed=i<self.circles_display
             )
             for i in range(self.circles_number)
         ]
         self.balls = [
-            Ball(position=self.center, score_position=SCORE_POSITION_1, color=Colors.GREEN.value ,text="Yes"),
-            Ball(position=self.center, score_position=SCORE_POSITION_2, color=Colors.RED.value, text="No"),
+            Ball(
+                position=self.center,
+                score_position=SCORE_POSITION_1,
+                color=Colors.GREEN.value,
+                text="Yes"
+            ),
+            Ball(
+                position=self.center,
+                score_position=SCORE_POSITION_2,
+                color=Colors.RED.value,
+                text="No"
+            ),
         ]
 
     def _init_states(self) -> None:

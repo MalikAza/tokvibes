@@ -19,19 +19,19 @@ from .consts import (
 class Circle:
     def __init__(
         self,
-        center: pygame.Vector2,
-        circle_number: int,
-        hole_position: float = 0,
-        displayed: bool = False
+        id: int,
+        position: pygame.Vector2,
+        hole_position: float,
+        displayed: bool
     ):
-        self.x = center.x
-        self.y = center.y
+        self.x = position.x
+        self.y = position.y
         self.width = CIRCLE_WIDTH
         self.original_width = CIRCLE_WIDTH  # Store original width for fading
         self.color = Colors.WHITE.value
         self.hole_position = math.radians(hole_position)
         self.hole_size = math.radians(HOLE_SIZE_DEGREES) 
-        self.radius = FIRST_INNER_CIRCLE_RADIUS + circle_number * (CIRCLE_SPACING+CIRCLE_WIDTH)
+        self.radius = FIRST_INNER_CIRCLE_RADIUS + id * (CIRCLE_SPACING+CIRCLE_WIDTH)
         self.rotation_speed = CIRCLE_ROTATION_SPEED
         self.angle = 0
         self.points_hole = []
