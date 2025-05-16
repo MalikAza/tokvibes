@@ -1,6 +1,6 @@
 # Game window settings
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 
 if TYPE_CHECKING:
     from .type import PositionType
@@ -50,6 +50,15 @@ class Colors(Enum):
     BLACK = (0, 0, 0)
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
+
+class RotationDirections(Enum):
+    CLOCK_WISE = 1
+    COUNTER_CLOCK_WISE = -1
+
+DIRECTION_SWITCH_MAP: Dict[RotationDirections, RotationDirections] = {
+    RotationDirections.CLOCK_WISE: RotationDirections.COUNTER_CLOCK_WISE,
+    RotationDirections.COUNTER_CLOCK_WISE: RotationDirections.CLOCK_WISE
+}
 
 # Timer settings
 TIMER_DURATION = 61

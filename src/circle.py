@@ -8,13 +8,15 @@ from .consts import (
     CIRCLE_FADE_IN_FRAME,
     CIRCLE_ROTATION_SPEED,
     CIRCLE_SPACING,
+    DIRECTION_SWITCH_MAP,
     FIRST_INNER_CIRCLE_RADIUS,
     HOLE_SIZE_DEGREES,
     CIRCLE_WIDTH,
     CIRCLE_FADE_OUT_FRAME,
     ZOOM_SPEED,
     DISSOLVE_SEGMENTS,
-    Colors
+    Colors,
+    RotationDirections
 )
 
 
@@ -35,6 +37,7 @@ class Circle:
         self.hole_size = math.radians(HOLE_SIZE_DEGREES) 
         self.radius = FIRST_INNER_CIRCLE_RADIUS + id * (CIRCLE_SPACING+CIRCLE_WIDTH)
         self.rotation_speed = CIRCLE_ROTATION_SPEED + (id * (CIRCLE_ROTATION_SPEED/5)) # Arbitrary for the moment
+        self.direction: RotationDirections = RotationDirections.CLOCK_WISE
         self.angle = 0
         self.active = True
         self.displayed = displayed
@@ -72,7 +75,8 @@ class Circle:
                 self.radius -= ZOOM_SPEED
             
             # Rotate the circle
-            self.angle = (self.angle + self.rotation_speed) % (2 * math.pi)
+            rotation = self.rotation_speed * self.direction.value
+            self.angle = (self.angle + rotation) % (2 * math.pi)
             # Update hole position
             self.hole_position = (self.hole_position + self.rotation_speed) % (2 * math.pi)
         
@@ -86,6 +90,10 @@ class Circle:
         # Only increment activation_frame for displayed circles
         if self.displayed and self.activation_frame < CIRCLE_FADE_IN_FRAME and self.active:
             self.activation_frame += 1
+
+    def switch_direction(self):
+        """Switch the rotation direction between clockwise and counter-clockwise"""
+        self.direction = DIRECTION_SWITCH_MAP[self.direction]
 
     def desactivate(self):
         self.active = False
