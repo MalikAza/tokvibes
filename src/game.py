@@ -5,7 +5,7 @@ from typing import List
 import numpy as np
 import pygame
 
-from .type import Args
+from .type import Args, GameType
 from .circle import Circle
 from .ball import Ball
 from .timer import Timer
@@ -23,7 +23,7 @@ from .consts import (
 )
 
 
-class Game:
+class Game(GameType):
     def __init__(
         self,
         screen: pygame.Surface,
@@ -59,7 +59,6 @@ class Game:
         ]
 
     def _init_states(self) -> None:
-        self.score = 0
         self.game_over = False
         self.debug_bounce = False
 
