@@ -39,13 +39,7 @@ class Game:
         )
 
         self._init_elements()
-        
-        # Game state
-        self.score = 0
-        self.game_over = False
-        self.debug_bounce = False
-        
-        # Initialize timer
+        self._init_states()
         self.timer = Timer()
         
         # Screen shake effect
@@ -68,6 +62,11 @@ class Game:
             Ball(center=self.center, score_position=SCORE_POSITION_2, text="No"),
             Ball(center=self.center, color=GREEN, score_position=SCORE_POSITION_1, text="Yes")
         ]
+
+    def _init_states(self) -> None:
+        self.score = 0
+        self.game_over = False
+        self.debug_bounce = False
 
     def _handle_events(self) -> bool:
         for event in pygame.event.get():
