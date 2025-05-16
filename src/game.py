@@ -1,6 +1,5 @@
 import math
 import sys
-import random
 from typing import List
 import numpy as np
 import pygame
@@ -146,17 +145,16 @@ class Game(GameType):
     def _update_display(self) -> None:
         self.screen.fill(BLACK)
 
-        # Draw all game elements on the appropriate surface
-        displayed_circles = [c for c in self.circles if c.displayed]
-        if len(displayed_circles) < self.circles_display:
-            for circle in self.circles:
-                if not circle.displayed:
-                    circle.display()  
-                    break
+        # Add one more circle at this frame if needed
+        if sum(1 for c in self.circles if c.displayed) < self.circles_display:
+            next_circle = next((c for c in self.circles if not c.displayed), None)
+            if next_circle:
+                next_circle.display()
 
-        displayed_circles = [c for c in self.circles if c.displayed]
-        for circle in displayed_circles:
-            circle.draw(self.screen)
+        # Draw all displayed circles
+        for circle in self.circles:
+            if circle.displayed:
+                circle.draw(self.screen)
 
         for ball in self.balls:
             ball.draw(self.screen)
