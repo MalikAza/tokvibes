@@ -53,7 +53,7 @@ class Colors(Enum):
 
 # Timer settings
 TIMER_DURATION = 61
-TIMER_POSITION = (50, 50)
+TIMER_POSITION: 'PositionType' = (50, 50)
 TIMER_RADIUS = 30
 TIMER_COLOR = Colors.WHITE.value
 TIMER_FIRE_THRESHOLD = 12
