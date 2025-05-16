@@ -1,10 +1,10 @@
 import math
 import sys
-from typing import List
+from typing import List, Union
 import numpy as np
 import pygame
 
-from .type import Args, GameType
+from .type import Args, ColorType, GameType
 from .circle import Circle
 from .ball import Ball
 from .timer import Timer
@@ -24,6 +24,7 @@ class Game(GameType):
         args: Args
     ) -> None:
         self.screen = screen
+        self.__args = args
         self.clock = pygame.time.Clock()
         self.circles_number = args.circles
         self.circles_display = args.circles_display
@@ -73,7 +74,7 @@ class Game(GameType):
             if event.type == pygame.KEYDOWN:
                 match event.key:
                     case pygame.K_r:
-                        self.__init__(self.screen, self.circles_number, self.circles_display)
+                        self.__init__(self.screen, self.__args)
                         self.game_over = False
 
                     case pygame.K_d:
@@ -135,22 +136,72 @@ class Game(GameType):
                 if len(points_hole) > 1:
                     pygame.draw.lines(self.screen, Colors.RED.value, False, points_hole, 5)
     
-    def _display_text(
+    def _get_winner(self) -> Union[False, Ball]:
+        """If Tie, returns False.
+        Otherwise returns the ball instance with the highest score.
+        """
+        if len(set([ball.score for ball in self.balls])) == 1:
+            return False
+        
+        return max(self.balls, key=lambda x: x.score)
+
+    def _colored_text_surface(
         self,
         text: str,
+        color: ColorType
+    ) -> pygame.Surface:
+        font = pygame.font.SysFont(None, 36)
+        
+        return font.render(text, True, color)
+
+    def _display_text(
+        self,
+        text_surfs: Union[pygame.Surface, List[pygame.Surface]],
         x: float,
         y: float,
         center: bool = False
     ) -> None:
-        font = pygame.font.SysFont(None, 36)
-        text_surface = font.render(text, True, Colors.WHITE.value)
-        text_rect = text_surface.get_rect(center=(x, y)) if center \
-                    else text_surface.get_rect(topleft=(x, y))
-        
-        self.screen.blit(text_surface, text_rect)
+        if not isinstance(text_surfs, list):
+            text_surfs = [text_surfs]
+
+        total_width = sum(surf.get_width() for surf in text_surfs)
+        max_height = max(surf.get_height() for surf in text_surfs)
+
+        if center:
+            start_x = x - total_width // 2
+            start_y = y - max_height // 2
+        else:
+            start_x = x
+            start_y = y
+
+        current_x = start_x
+        for surf in text_surfs:
+            self.screen.blit(surf, (current_x, start_y))
+            current_x += surf.get_width()
 
     def _update_display(self) -> None:
         self.screen.fill(Colors.BLACK.value)
+
+        if self.game_over:
+            winner = self._get_winner()
+            title_text = "Tie!" if not winner else f'"{winner.text}" wins!'
+            title_color = Colors.WHITE.value if not winner else winner.color
+
+            restart_text = " Press R to restart"
+
+            text_surfs = [
+                self._colored_text_surface(title_text, title_color),
+                self._colored_text_surface(restart_text, Colors.WHITE.value)
+            ]
+            self._display_text(
+                text_surfs,
+                self.center.x,
+                self.center.y,
+                center=True
+            )
+            pygame.display.flip()
+            self.clock.tick(FPS)
+            return
 
         # Add one more circle at this frame if needed
         if sum(1 for c in self.circles if c.displayed) < self.circles_display:
@@ -158,7 +209,6 @@ class Game(GameType):
             if next_circle:
                 next_circle.display()
 
-        # Draw all displayed circles
         for circle in self.circles:
             if circle.displayed:
                 circle.draw(self.screen)
@@ -166,17 +216,7 @@ class Game(GameType):
         for ball in self.balls:
             ball.draw(self.screen)
             
-        # Draw the timer
         self.timer.draw(self.screen)
-
-        if self.game_over:
-            game_over_text = "Time's up!" if self.timer.is_expired() else "Game Over!"
-            self._display_text(
-                f"{game_over_text} Press R to restart",
-                self.center.x,
-                self.center.y,
-                center=True
-            )
 
         if self.debug_bounce:
             self._draw_debug_info()
