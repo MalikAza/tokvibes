@@ -38,20 +38,7 @@ class Game:
             y=self.screen.get_height()//2
         )
 
-        # Elements
-        self.circles = [
-            Circle(
-                center=self.center,
-                circle_number=i,
-                hole_position=(i*HOLE_SHIFT)%360,
-                displayed= i < self.circles_display
-            )
-            for i in range(self.circles_number)
-        ]
-        self.balls = [
-            Ball(center=self.center, score_position=SCORE_POSITION_2, text="No"),
-            Ball(center=self.center, color=GREEN, score_position=SCORE_POSITION_1, text="Yes")
-        ]
+        self._init_elements()
         
         # Game state
         self.score = 0
@@ -66,6 +53,21 @@ class Game:
         self.shake_duration = 0
         self.shake_intensity = 0
         self.original_screen_rect = self.screen.get_rect()
+
+    def _init_elements(self) -> None:
+        self.circles = [
+            Circle(
+                center=self.center,
+                circle_number=i,
+                hole_position=(i*HOLE_SHIFT)%360,
+                displayed= i < self.circles_display
+            )
+            for i in range(self.circles_number)
+        ]
+        self.balls = [
+            Ball(center=self.center, score_position=SCORE_POSITION_2, text="No"),
+            Ball(center=self.center, color=GREEN, score_position=SCORE_POSITION_1, text="Yes")
+        ]
 
     def _handle_events(self) -> bool:
         for event in pygame.event.get():
