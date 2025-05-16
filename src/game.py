@@ -29,13 +29,6 @@ class Game:
         screen: pygame.Surface,
         args: Args
     ) -> None:
-        # Initialize sound system
-        try:
-            pygame.mixer.init()
-            print("Sound system initialized")
-        except:
-            print("Warning: Sound system could not be initialized")
-            
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.circles_number = args.circles
