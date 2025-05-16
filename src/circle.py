@@ -1,7 +1,9 @@
 import math
+from typing import List
 import pygame
 import random
 
+from .type import DissolveSegmentType
 from .consts import (
     CIRCLE_FADE_IN_FRAME,
     CIRCLE_ROTATION_SPEED,
@@ -34,12 +36,11 @@ class Circle:
         self.radius = FIRST_INNER_CIRCLE_RADIUS + id * (CIRCLE_SPACING+CIRCLE_WIDTH)
         self.rotation_speed = CIRCLE_ROTATION_SPEED + (id * (CIRCLE_ROTATION_SPEED/5)) # Arbitrary for the moment
         self.angle = 0
-        self.points_hole = []
         self.active = True
         self.displayed = displayed
         self.desactivate_frame = CIRCLE_FADE_OUT_FRAME
         self.activation_frame = CIRCLE_FADE_IN_FRAME if displayed else 0
-        self.dissolve_segments = []
+        self.dissolve_segments: List[DissolveSegmentType] = []
         self.generate_dissolve_segments()
         
     def generate_dissolve_segments(self):
@@ -54,7 +55,7 @@ class Circle:
             start = i * segment_size + self.hole_position + self.hole_size
             end = start + segment_size
             
-            segment = {
+            segment: DissolveSegmentType = {
                 'start': start,
                 'end': end,
                 'active': True,
