@@ -18,8 +18,6 @@ from .consts import (
     SCORE_POSITION_2,
     HOLE_SHIFT,
     WHITE,
-    SCREEN_SHAKE_INTENSITY,
-    SCREEN_SHAKE_DURATION
 )
 
 
@@ -40,7 +38,6 @@ class Game(GameType):
 
         self._init_elements()
         self._init_states()
-        self._init_screen_shake_effect()
         self.timer = Timer()
 
     def _init_elements(self) -> None:
@@ -62,12 +59,6 @@ class Game(GameType):
         self.game_over = False
         self.debug_bounce = False
 
-    def _init_screen_shake_effect(self) -> None:
-        self.shake_frames = 0
-        self.shake_duration = 0
-        self.shake_intensity = 0
-        self.original_screen_rect = self.screen.get_rect()
-
     def _handle_events(self) -> bool:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -86,12 +77,6 @@ class Game(GameType):
                         return False
                     
         return True
-
-    def _start_screen_shake(self, intensity=SCREEN_SHAKE_INTENSITY, duration=SCREEN_SHAKE_DURATION):
-        """Start a screen shake effect"""
-        self.shake_frames = int(duration * FPS)
-        self.shake_duration = self.shake_frames
-        self.shake_intensity = intensity
     
     def _handle_game(self) -> None:
         if self.game_over: return
@@ -101,10 +86,6 @@ class Game(GameType):
         if self.timer.is_expired():
             self.game_over = True
             return
-
-        # Update screen shake
-        if self.shake_frames > 0:
-            self.shake_frames -= 1
 
         for ball in self.balls:
             ball.move()
@@ -120,10 +101,7 @@ class Game(GameType):
             # Check for collisions, escapes, and update score
             if circle.active:
                 for ball in self.balls:
-                    # Check if the ball scored a point
-                    if ball.check_collision(circle):
-                        # Trigger screen shake on score
-                        self._start_screen_shake()
+                    ball.check_collision(circle)
 
         self.circles = active_circles
 
@@ -166,26 +144,7 @@ class Game(GameType):
         self.screen.blit(text_surface, text_rect)
 
     def _update_display(self) -> None:
-        # Clear the screen
         self.screen.fill(BLACK)
-        
-        # Create a display surface for shake effect
-        if self.shake_frames > 0:
-            # Calculate shake intensity based on remaining frames
-            shake_progress = self.shake_frames / self.shake_duration
-            current_intensity = self.shake_intensity * shake_progress
-            
-            # Apply random offset for shaking
-            dx = random.randint(-int(current_intensity), int(current_intensity))
-            dy = random.randint(-int(current_intensity), int(current_intensity))
-            
-            # Create a display surface that will be offset
-            display_surface = pygame.Surface((self.screen.get_width(), self.screen.get_height()))
-            display_surface.fill(BLACK)
-        else:
-            # No shake, use the main screen directly
-            display_surface = self.screen
-            dx, dy = 0, 0
 
         # Draw all game elements on the appropriate surface
         displayed_circles = [c for c in self.circles if c.displayed]
@@ -197,13 +156,13 @@ class Game(GameType):
 
         displayed_circles = [c for c in self.circles if c.displayed]
         for circle in displayed_circles:
-            circle.draw(display_surface)
+            circle.draw(self.screen)
 
         for ball in self.balls:
-            ball.draw(display_surface)
+            ball.draw(self.screen)
             
         # Draw the timer
-        self.timer.draw(display_surface)
+        self.timer.draw(self.screen)
 
         if self.game_over:
             game_over_text = "Time's up!" if self.timer.is_expired() else "Game Over!"
@@ -216,12 +175,7 @@ class Game(GameType):
 
         if self.debug_bounce:
             self._draw_debug_info()
-
-        # If shaking, blit the display surface onto the screen with offset
-        if self.shake_frames > 0:
-            self.screen.blit(display_surface, (dx, dy))
         
-        # Update the display and maintain frame rate
         pygame.display.flip()
         self.clock.tick(FPS)
         
