@@ -40,13 +40,8 @@ class Game:
 
         self._init_elements()
         self._init_states()
+        self._init_screen_shake_effect()
         self.timer = Timer()
-        
-        # Screen shake effect
-        self.shake_frames = 0
-        self.shake_duration = 0
-        self.shake_intensity = 0
-        self.original_screen_rect = self.screen.get_rect()
 
     def _init_elements(self) -> None:
         self.circles = [
@@ -67,6 +62,12 @@ class Game:
         self.score = 0
         self.game_over = False
         self.debug_bounce = False
+
+    def _init_screen_shake_effect(self) -> None:
+        self.shake_frames = 0
+        self.shake_duration = 0
+        self.shake_intensity = 0
+        self.original_screen_rect = self.screen.get_rect()
 
     def _handle_events(self) -> bool:
         for event in pygame.event.get():
