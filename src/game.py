@@ -4,7 +4,7 @@ from typing import List, Union
 import numpy as np
 import pygame
 
-from .type import Args, ColorType, GameType
+from .type import Args, ColorType
 from .circle import Circle
 from .ball import Ball
 from .timer import Timer
@@ -17,17 +17,26 @@ from .consts import (
 )
 
 
-class Game(GameType):
+class Game:
+    """
+    Super class monitoring the game's states and display
+    """
+
     def __init__(
         self,
         screen: pygame.Surface,
         args: Args
     ) -> None:
+        """
+        It's a constructor's method, what do you want me to explain ?
+        Seriously ...
+        """
         self.screen = screen
         self.__args = args
-        self.clock = pygame.time.Clock()
         self.circles_number = args.circles
         self.circles_display = args.circles_display
+        self.clock = pygame.time.Clock()
+        self.timer = Timer()
         self.center = pygame.Vector2(
             x=self.screen.get_width()//2,
             y=self.screen.get_height()//2
@@ -35,9 +44,11 @@ class Game(GameType):
 
         self._init_elements()
         self._init_states()
-        self.timer = Timer()
 
     def _init_elements(self) -> None:
+        """
+        Creates the different instances for circles and balls following the class states args
+        """
         self.circles = [
             Circle(
                 id=i,
@@ -67,6 +78,9 @@ class Game(GameType):
         self.debug_bounce = False
 
     def _handle_events(self) -> bool:
+        """
+        Mainly a keyboard event handler
+        """
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
@@ -86,6 +100,9 @@ class Game(GameType):
         return True
     
     def _handle_game(self) -> None:
+        """
+        Handles the different states of the game following the rules setted
+        """
         if self.game_over: return
 
         # Update timer
@@ -119,6 +136,9 @@ class Game(GameType):
             self.game_over = True
 
     def _draw_debug_info(self):
+        """
+        Update the display with circles holes visualization for debugging
+        """
         # Draw hole visualization for debugging
         for circle in self.circles:
             if circle.active:
@@ -137,7 +157,8 @@ class Game(GameType):
                     pygame.draw.lines(self.screen, Colors.RED.value, False, points_hole, 5)
     
     def _get_winner(self) -> Union[False, Ball]:
-        """If Tie, returns False.
+        """
+        If Tie, returns False.
         Otherwise returns the ball instance with the highest score.
         """
         if len(set([ball.score for ball in self.balls])) == 1:
@@ -150,6 +171,9 @@ class Game(GameType):
         text: str,
         color: ColorType
     ) -> pygame.Surface:
+        """
+        Returns the rendered text with the color given
+        """
         font = pygame.font.SysFont(None, 36)
         
         return font.render(text, True, color)
@@ -161,6 +185,15 @@ class Game(GameType):
         y: float,
         center: bool = False
     ) -> None:
+        """
+        Display one or a list of text surfaces, as if it was one string
+
+        Args:
+            text_surfs (Union[pygame.Surface, List[pygame.Surface]]): Surface(s) to render
+            x (float): Horizontal start of the string
+            y (float): Vertical start of the string
+            center (bool, optional): If the string needs to be centered at the position given
+        """
         if not isinstance(text_surfs, list):
             text_surfs = [text_surfs]
 
@@ -180,6 +213,9 @@ class Game(GameType):
             current_x += surf.get_width()
 
     def _update_display(self) -> None:
+        """"
+        Update the display following the different states
+        """
         self.screen.fill(Colors.BLACK.value)
 
         if self.game_over:
@@ -225,6 +261,9 @@ class Game(GameType):
         self.clock.tick(FPS)
         
     def run(self):
+        """
+        Let's play!
+        """
         running = True
         while running:
             running = self._handle_events()
